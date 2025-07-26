@@ -3,10 +3,10 @@
   "private": true,
   "packageManager": "pnpm@10.13.1",
   "scripts": {
+    "build": "turbo run build",
     "biome:check": "biome check .",
     "biome:check:fix": "biome check . --write",
     "bootstrap": "pnpm install",
-    "lint": "turbo run lint",
     "test": "turbo run test"
   },
   "devDependencies": {
