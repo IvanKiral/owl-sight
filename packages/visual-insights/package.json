@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "tsc -b",
-    "lint": "eslint src --ext .ts"
+    "test": "vitest run"
   },
   "dependencies": {
     "camelcase-keys": "^9.1.3",
