@@ -1,0 +1,12 @@
+{
+  "description": "Sample Instagram reel description #test #sample",
+  "channel": "test_user",
+  "uploader": "test_user",
+  "duration": 30.2,
+  "timestamp": 1702656000,
+  "upload_date": "20231215",
+  "like_count": 25,
+  "comment_count": 5,
+  "extractor": "Instagram",
+  "extractor_key": "Instagram"
+}

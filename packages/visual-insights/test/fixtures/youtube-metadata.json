@@ -1,0 +1,23 @@
+{
+  "title": "Sample YouTube Video Title",
+  "description": "This is a sample description for testing purposes. It contains multiple lines\nand various characters: !@#$%^&*()",
+  "channel": "Test Channel",
+  "uploader": "Test Uploader",
+  "upload_date": "20231215",
+  "timestamp": 1702656000,
+  "duration": 120.5,
+  "duration_string": "2:00",
+  "tags": ["test", "sample", "video"],
+  "categories": ["Education"],
+  "language": "en",
+  "view_count": 1000,
+  "like_count": 50,
+  "comment_count": 10,
+  "webpage_url": "https://www.youtube.com/watch?v=test123",
+  "extractor": "youtube",
+  "extractor_key": "Youtube",
+  "is_live": false,
+  "was_live": false,
+  "age_limit": 0,
+  "thumbnail": "https://i.ytimg.com/vi/test123/maxresdefault.jpg"
+}
