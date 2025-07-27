@@ -42,15 +42,3 @@ export const createYtDlpExtractAudioArgs = (
   ];
 };
 
-// Default args matching the original hardcoded values
-export const createDefaultAudioArgs = (
-  outputPath: string,
-): ReadonlyArray<string> => {
-  return createYtDlpExtractAudioArgs({
-    format: "bestaudio/best",
-    audioFormat: "m4a",
-    audioQuality: 0,
-    verbose: false,
-    outputPath,
-  });
-};

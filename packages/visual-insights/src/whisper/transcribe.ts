@@ -1,27 +1,11 @@
 import { spawn } from "node:child_process";
+import { WhisperOptions } from "./whisperTypes.js";
+import { createWhisperArgs } from "./whisperCmdArgs.js";
 
-export const transcribe = async (
-  audioPath: string,
-  language: string,
-  model = "turbo",
-): Promise<string> => {
-  const result = spawn(
-    "whisper",
-    [
-      audioPath,
-      "--model",
-      model,
-      "--language",
-      language,
-      "--output_format",
-      "txt",
-      "--output_dir",
-      "-",
-    ],
-    {
-      stdio: ["ignore", "pipe", "pipe"],
-    },
-  );
+export const transcribe = async (options: WhisperOptions): Promise<string> => {
+  const result = spawn("whisper", createWhisperArgs(options), {
+    stdio: ["ignore", "pipe", "pipe"],
+  });
 
   return new Promise((resolve, reject) => {
     result.stdout.on("data", (data) => {
