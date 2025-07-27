@@ -4,8 +4,10 @@ import z from "zod";
 import {
   YtDlpYoutubeMetadaKeys,
   YtDlpYoutubeMetadataSchema,
+  YtDlpYoutubeMetadata,
   YtDlpInstagramMetadataKeys,
   YtDlpInstagramReelMetadataSchema,
+  YtDlpInstagramReelMetadata,
 } from "./ytdlpTypes.js";
 
 const camelize = <T extends Record<string, unknown>>(val: T) =>
@@ -49,18 +51,30 @@ const parseMetadata = <
   >;
 };
 
-export const extractMetadata = async (
+export type VideoMetadata =
+  | {
+      type: "youtube";
+      metadata: ReadonlyArray<YtDlpYoutubeMetadaKeys>;
+    }
+  | {
+      type: "instagram";
+      metadata: ReadonlyArray<YtDlpInstagramMetadataKeys>;
+    };
+
+export async function extractMetadata<K extends readonly YtDlpYoutubeMetadaKeys[]>(
   filePath: string,
-  options:
-    | {
-        type: "youtube";
-        metadata: ReadonlyArray<YtDlpYoutubeMetadaKeys>;
-      }
-    | {
-        type: "instagram";
-        metadata: ReadonlyArray<YtDlpInstagramMetadataKeys>;
-      },
-) => {
+  options: { type: "youtube"; metadata: K }
+): Promise<Pick<YtDlpYoutubeMetadata, K[number]>>;
+
+export async function extractMetadata<K extends readonly YtDlpInstagramMetadataKeys[]>(
+  filePath: string,
+  options: { type: "instagram"; metadata: K }
+): Promise<Pick<YtDlpInstagramReelMetadata, K[number]>>;
+
+export async function extractMetadata(
+  filePath: string,
+  options: VideoMetadata,
+) {
   try {
     const fileData = await readFile(filePath, "utf-8");
     const jsonData = JSON.parse(fileData);

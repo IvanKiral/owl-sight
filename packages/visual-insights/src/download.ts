@@ -1,6 +1,6 @@
 import * as os from "node:os";
 import * as path from "node:path";
-import { runYtDlp, runYtDlpMetadata } from "./ytdlp.js";
+import { runYtDlp } from "./ytdlp.js";
 import {
   AudioFormat,
   AudioQuality,
@@ -8,18 +8,19 @@ import {
 } from "./ytdlp/ytdlpAudioTypes.js";
 import { createYtDlpExtractAudioArgs } from "./ytdlp/cmdArgs.js";
 
+export type YtDlpAudioOptions = Partial<{
+  audioFormat?: AudioFormat;
+  audioQuality?: AudioQuality;
+  format?: FormatSelection;
+}>;
+
 export const downloadDataFromVideo = async (
   url: string,
-  options?: Partial<{
-    audioFormat?: AudioFormat;
-    audioQuality?: AudioQuality;
-    format?: FormatSelection;
-    metadata?: boolean;
-  }>,
+  dirPath: string,
+  options?: YtDlpAudioOptions & { metadata?: boolean },
 ) => {
-  const tempDir = os.tmpdir();
   const outTemplate = path.join(
-    tempDir,
+    dirPath,
     `audio.${options?.audioFormat ?? "m4a"}`,
   );
 
@@ -36,10 +37,11 @@ export const downloadDataFromVideo = async (
     console.log("Download Complete!");
   } catch (e) {
     console.error("yt-dlp failed:", e);
+    throw e;
   }
 
   return {
-    audioFile: outTemplate,
-    metadataFile: path.join(tempDir, "audio.info.json"),
+    audioFilePath: outTemplate,
+    metadataFilePath: path.join(dirPath, "audio.info.json"),
   };
 };
