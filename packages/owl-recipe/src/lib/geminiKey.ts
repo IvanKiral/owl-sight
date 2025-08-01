@@ -1,4 +1,3 @@
-import prompts from "prompts";
 import { type WithError, success, error } from "shared";
 
 export const getGeminiApiKey = async (): Promise<WithError<string, string>> => {
@@ -19,16 +18,23 @@ export const getGeminiApiKey = async (): Promise<WithError<string, string>> => {
 };
 
 const promptForApiKey = async (): Promise<WithError<string, string>> => {
-  const response = await prompts({
-    type: "password",
-    name: "apiKey",
-    message: "Enter your Gemini API key:",
-    validate: (value: string) => value.length > 0 || "API key is required",
-  });
+  const enquirer = (await import("enquirer")).default;
+  
+  try {
+    const response = await enquirer.prompt({
+      type: "password",
+      name: "apiKey",
+      message: "Enter your Gemini API key:",
+    });
+    
+    const apiKey = (response as any).apiKey;
+    
+    if (!apiKey || apiKey.length === 0) {
+      return error("API key is required to continue");
+    }
 
-  if (!response.apiKey) {
+    return success(apiKey);
+  } catch (err) {
     return error("API key is required to continue");
   }
-
-  return success(response.apiKey);
 };
