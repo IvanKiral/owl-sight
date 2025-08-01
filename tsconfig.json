@@ -1,4 +1,4 @@
 {
   "files": [],
-  "references": [{ "path": "packages/visual-insights" }, { "path": "packages/cli" }]
+  "references": [{ "path": "packages/shared" }, { "path": "packages/visual-insights" }, { "path": "packages/cli" }]
 }
