@@ -1,8 +1,10 @@
-import { getVideoData } from "visual-insights";
+import { getVideoData, WHISPER_LANGUAGES } from "visual-insights";
+import type { WhisperLanguage } from "visual-insights";
 import type { CommandModule } from "yargs";
 
 interface SummarizeRecipeOptions {
   url: string;
+  language?: WhisperLanguage;
 }
 
 export const summarizeRecipeCommand: CommandModule<{}, SummarizeRecipeOptions> =
@@ -17,9 +19,19 @@ export const summarizeRecipeCommand: CommandModule<{}, SummarizeRecipeOptions> =
           type: "string",
           demandOption: true,
         })
+        .option("language", {
+          describe: "Language of the video audio for transcription",
+          type: "string",
+          choices: WHISPER_LANGUAGES,
+          alias: "l",
+        } as const)
         .example(
           "$0 summarize-recipe https://youtube.com/watch?v=example",
           "Summarize recipe from YouTube video",
+        )
+        .example(
+          "$0 summarize-recipe https://youtube.com/watch?v=example -l es",
+          "Summarize Spanish recipe from YouTube video",
         );
     },
 
@@ -30,6 +42,7 @@ export const summarizeRecipeCommand: CommandModule<{}, SummarizeRecipeOptions> =
         },
         whisperOptions: {
           verbose: "False",
+          ...(argv.language && { language: argv.language }),
         },
       });
 
