@@ -63,8 +63,7 @@ export function getVideoData(
       },
     );
     const [resultTranscripton, resultMetadata] = await Promise.all([
-      transcribe({
-        audioPath: audioFilePath,
+      transcribe(audioFilePath, tmpDir, {
         ...options?.whisperOptions,
         outputDir: tmpDir,
       }),
