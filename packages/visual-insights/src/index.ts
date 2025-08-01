@@ -3,3 +3,7 @@ export * from "./download.js";
 export * from "./whisper/transcribe.js";
 export { extractMetadata } from "./ytdlp/metadata.js";
 export { getVideoData } from "./utils/videoData.js";
+export {
+  type WhisperLanguage,
+  WHISPER_LANGUAGES,
+} from "./whisper/whisperTypes.js";
