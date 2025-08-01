@@ -4,14 +4,63 @@ import type {
   FormatSelection,
 } from "./ytdlpAudioTypes.js";
 
-export type AudioExtractionArgs = {
-  audioFormat?: AudioFormat;
-  audioQuality?: AudioQuality;
-  format?: FormatSelection;
+// Supported browsers for cookie extraction
+export type SupportedBrowser =
+  | "brave"
+  | "chrome"
+  | "chromium"
+  | "edge"
+  | "firefox"
+  | "opera"
+  | "safari"
+  | "vivaldi"
+  | "whale";
+
+// Keyring options for Linux Chromium decryption
+export type Keyring =
+  | "basictext"
+  | "gnomekeyring"
+  | "kwallet"
+  | "kwallet5"
+  | "kwallet6";
+
+// Cookie configuration options
+export type CookieConfig =
+  | {
+      type: "browser";
+      browser: SupportedBrowser;
+      profile?: string;
+      keyring?: Keyring;
+    }
+  | { type: "file"; path: string }
+  | undefined;
+
+// Common options that can be shared between audio and video extraction
+export type CommonExtractionArgs = {
   outputPath: string;
   writeInfoJson?: boolean;
   verbose?: boolean;
   quiet?: boolean;
+  cookies?: CookieConfig;
+};
+
+export type AudioExtractionArgs = CommonExtractionArgs & {
+  audioFormat?: AudioFormat;
+  audioQuality?: AudioQuality;
+  format?: FormatSelection;
+};
+
+const createCookieArgs = (cookies?: CookieConfig): ReadonlyArray<string> => {
+  if (!cookies) return [];
+
+  if (cookies.type === "file") {
+    return ["--cookies", cookies.path];
+  }
+
+  const { browser, keyring, profile } = cookies;
+  const browserSpec = `${browser}${keyring ? `+${keyring}` : ""}${profile ? `:${profile}` : ""}`;
+
+  return ["--cookies-from-browser", browserSpec];
 };
 
 export const createYtDlpExtractAudioArgs = (
@@ -36,9 +85,11 @@ export const createYtDlpExtractAudioArgs = (
 
     ...(options.writeInfoJson ? ["--write-info-json"] : []),
 
+    // Cookie arguments
+    ...createCookieArgs(options.cookies),
+
     // Output path (required)
     "-o",
     options.outputPath,
   ];
 };
-
