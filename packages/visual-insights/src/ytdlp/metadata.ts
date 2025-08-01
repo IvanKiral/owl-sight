@@ -1,6 +1,7 @@
 import camelcaseKeys from "camelcase-keys";
 import { readFile } from "fs/promises";
 import z from "zod";
+import { WithError, success, error } from "shared";
 import {
   YtDlpYoutubeMetadaKeys,
   YtDlpYoutubeMetadataSchema,
@@ -16,7 +17,7 @@ const camelize = <T extends Record<string, unknown>>(val: T) =>
 const parseMetadataFromYoutube = <K extends readonly YtDlpYoutubeMetadaKeys[]>(
   jsonString: string,
   metadataKeys: K,
-) => {
+): WithError<Pick<YtDlpYoutubeMetadata, K[number]>, string> => {
   return parseMetadata(YtDlpYoutubeMetadataSchema, metadataKeys, jsonString);
 };
 
@@ -25,7 +26,7 @@ const parseMetadataFromInstagram = <
 >(
   jsonString: string,
   metadataKeys: K,
-) => {
+): WithError<Pick<YtDlpInstagramReelMetadata, K[number]>, string> => {
   return parseMetadata(
     YtDlpInstagramReelMetadataSchema,
     metadataKeys,
@@ -40,15 +41,22 @@ const parseMetadata = <
   schema: S,
   keys: K,
   data: unknown,
-) => {
+): WithError<Pick<Required<z.infer<S>>, K[number]>, string> => {
   const pickObj = Object.fromEntries(keys.map((k) => [k, true])) as {
     [P in K[number]]: true;
   };
 
-  return schema.required().pick(pickObj).parse(data) as unknown as Pick<
-    Required<z.infer<S>>,
-    K[number]
-  >;
+  const result = schema.required().pick(pickObj).safeParse(data);
+
+  if (!result.success) {
+    return error(
+      `Validation failed: ${result.error.issues.map((i) => i.message).join("; ")}`,
+    );
+  }
+
+  return success(
+    result.data as unknown as Pick<Required<z.infer<S>>, K[number]>,
+  );
 };
 
 export type VideoMetadata =
@@ -61,31 +69,46 @@ export type VideoMetadata =
       metadata: ReadonlyArray<YtDlpInstagramMetadataKeys>;
     };
 
-export async function extractMetadata<K extends readonly YtDlpYoutubeMetadaKeys[]>(
+export async function extractMetadata<
+  K extends readonly YtDlpYoutubeMetadaKeys[],
+>(
   filePath: string,
-  options: { type: "youtube"; metadata: K }
-): Promise<Pick<YtDlpYoutubeMetadata, K[number]>>;
+  options: { type: "youtube"; metadata: K },
+): Promise<WithError<Pick<YtDlpYoutubeMetadata, K[number]>, string>>;
 
-export async function extractMetadata<K extends readonly YtDlpInstagramMetadataKeys[]>(
+export async function extractMetadata<
+  K extends readonly YtDlpInstagramMetadataKeys[],
+>(
   filePath: string,
-  options: { type: "instagram"; metadata: K }
-): Promise<Pick<YtDlpInstagramReelMetadata, K[number]>>;
+  options: { type: "instagram"; metadata: K },
+): Promise<WithError<Pick<YtDlpInstagramReelMetadata, K[number]>, string>>;
 
 export async function extractMetadata(
   filePath: string,
   options: VideoMetadata,
-) {
+): Promise<WithError<any, string>> {
   try {
     const fileData = await readFile(filePath, "utf-8");
     const jsonData = JSON.parse(fileData);
 
-    if (options.type === "youtube") {
-      return camelize(parseMetadataFromYoutube(jsonData, options.metadata));
-    } else {
-      return camelize(parseMetadataFromInstagram(jsonData, options.metadata));
+    const parseResult =
+      options.type === "youtube"
+        ? parseMetadataFromYoutube(jsonData, options.metadata)
+        : parseMetadataFromInstagram(jsonData, options.metadata);
+
+    if (!parseResult.success) {
+      return error(
+        `Failed to extract ${options.type} metadata from '${filePath}': ${parseResult.error}`,
+      );
     }
+
+    return success(camelize(parseResult.result));
   } catch (e) {
-    console.error("yt-dlp failed to extract metadata:", e);
-    throw new Error(`Failed to extract metadata: ${e}`);
+    if (e instanceof SyntaxError) {
+      return error(`Invalid JSON in metadata file '${filePath}': ${e.message}`);
+    }
+    return error(
+      `Failed to read metadata file '${filePath}': ${e instanceof Error ? e.message : String(e)}`,
+    );
   }
-};
+}

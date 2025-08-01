@@ -4,6 +4,7 @@ import {
   createYtDlpExtractAudioArgs,
 } from "./ytdlp/cmdArgs.js";
 import { runYtDlp } from "./ytdlp/runYtdlp.js";
+import { WithError, success, error } from "shared";
 
 export type YtDlpAudioOptions = Partial<
   Pick<AudioExtractionArgs, "audioFormat" | "audioQuality" | "format" | "quiet">
@@ -13,7 +14,7 @@ export const downloadDataFromVideo = async (
   url: string,
   dirPath: string,
   options?: YtDlpAudioOptions & { metadata?: boolean },
-) => {
+): Promise<WithError<{ audioFilePath: string; metadataFilePath: string }, string>> => {
   const outTemplate = path.join(
     dirPath,
     `audio.${options?.audioFormat ?? "m4a"}`,
@@ -30,13 +31,11 @@ export const downloadDataFromVideo = async (
 
   try {
     await runYtDlp(url, ytdlArgs as string[]);
+    return success({
+      audioFilePath: outTemplate,
+      metadataFilePath: path.join(dirPath, "audio.info.json"),
+    });
   } catch (e) {
-    console.error("yt-dlp failed:", e);
-    throw e;
+    return error(`Failed to download video: ${e}`);
   }
-
-  return {
-    audioFilePath: outTemplate,
-    metadataFilePath: path.join(dirPath, "audio.info.json"),
-  };
 };

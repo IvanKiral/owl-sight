@@ -9,6 +9,7 @@ import {
   YtDlpInstagramReelMetadata,
 } from "../ytdlp/ytdlpTypes.js";
 import { withTempDir } from "./tempFolder.js";
+import { WithError, success } from "shared";
 
 export function getVideoData<K extends readonly YtDlpYoutubeMetadaKeys[]>(
   videoLink: string,
@@ -17,10 +18,15 @@ export function getVideoData<K extends readonly YtDlpYoutubeMetadaKeys[]>(
     whisperOptions?: Omit<WhisperOptions, "audioPath">;
     ytdlpOptions?: YtDlpAudioOptions;
   },
-): Promise<{
-  transcription: string;
-  metadata: Pick<YtDlpYoutubeMetadata, K[number]>;
-}>;
+): Promise<
+  WithError<
+    {
+      transcription: string;
+      metadata: Pick<YtDlpYoutubeMetadata, K[number]>;
+    },
+    string
+  >
+>;
 
 export function getVideoData<K extends readonly YtDlpInstagramMetadataKeys[]>(
   videoLink: string,
@@ -29,10 +35,15 @@ export function getVideoData<K extends readonly YtDlpInstagramMetadataKeys[]>(
     whisperOptions?: Omit<WhisperOptions, "audioPath">;
     ytdlpOptions?: YtDlpAudioOptions;
   },
-): Promise<{
-  transcription: string;
-  metadata: Pick<YtDlpInstagramReelMetadata, K[number]>;
-}>;
+): Promise<
+  WithError<
+    {
+      transcription: string;
+      metadata: Pick<YtDlpInstagramReelMetadata, K[number]>;
+    },
+    string
+  >
+>;
 
 export function getVideoData(
   videoLink: string,
@@ -40,10 +51,15 @@ export function getVideoData(
     whisperOptions?: Omit<WhisperOptions, "audioPath">;
     ytdlpOptions?: YtDlpAudioOptions;
   },
-): Promise<{
-  transcription: string;
-  metadata: Pick<YtDlpYoutubeMetadata, "description">;
-}>;
+): Promise<
+  WithError<
+    {
+      transcription: string;
+      metadata: Pick<YtDlpYoutubeMetadata, "description">;
+    },
+    string
+  >
+>;
 
 export function getVideoData(
   videoLink: string,
@@ -54,7 +70,7 @@ export function getVideoData(
   },
 ) {
   return withTempDir(async (tmpDir) => {
-    const { audioFilePath, metadataFilePath } = await downloadDataFromVideo(
+    const downloadResult = await downloadDataFromVideo(
       videoLink,
       tmpDir,
       {
@@ -62,11 +78,23 @@ export function getVideoData(
         metadata: true,
       },
     );
-    const [resultTranscripton, resultMetadata] = await Promise.all([
-      transcribe(audioFilePath, tmpDir, {
-        ...options?.whisperOptions,
-        outputDir: tmpDir,
-      }),
+    
+    if (!downloadResult.success) {
+      return downloadResult;
+    }
+    
+    const { audioFilePath, metadataFilePath } = downloadResult.result;
+    
+    const transcriptionResult = await transcribe(audioFilePath, tmpDir, {
+      ...options?.whisperOptions,
+      outputDir: tmpDir,
+    });
+    
+    if (!transcriptionResult.success) {
+      return transcriptionResult;
+    }
+
+    const metadataResult = await (
       options?.metadata
         ? options.metadata.type === "youtube"
           ? extractMetadata(metadataFilePath, options.metadata)
@@ -74,9 +102,13 @@ export function getVideoData(
         : extractMetadata(metadataFilePath, {
             type: "youtube" as const,
             metadata: ["description"] as const,
-          }),
-    ]);
+          })
+    );
 
-    return { transcription: resultTranscripton, metadata: resultMetadata };
+    if (!metadataResult.success) {
+      return metadataResult;
+    }
+
+    return success({ transcription: transcriptionResult.result, metadata: metadataResult.result });
   });
 }
