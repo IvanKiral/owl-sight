@@ -24,32 +24,26 @@ export const summarizeRecipeCommand: CommandModule<{}, SummarizeRecipeOptions> =
     },
 
     handler: async (argv) => {
-      try {
-        console.log("Downloading audio...");
+      const result = await getVideoData(argv.url, {
+        ytdlpOptions: {
+          quiet: true,
+        },
+        whisperOptions: {
+          verbose: "False",
+        },
+      });
 
-        console.log("Transcribing audio...");
-
-        console.log("Extracting metadata...");
-
-        const result = await getVideoData(argv.url, {
-          ytdlpOptions: {
-            quiet: true,
-          },
-          whisperOptions: {
-            verbose: "False",
-          },
-        });
-
-        console.log("\n=== TRANSCRIPTION ===");
-        console.log(JSON.stringify(result.transcription));
-
-        console.log("\n=== DESCRIPTION ===");
-        console.log(result.metadata.description);
-
-        console.log("\nComplete!");
-      } catch (error) {
-        console.error("Error processing video:", error);
+      if (!result.success) {
+        console.error("Error processing video:", result.error);
         process.exit(1);
       }
+
+      console.log("\n=== TRANSCRIPTION ===");
+      console.log(result.result.transcription);
+
+      console.log("\n=== DESCRIPTION ===");
+      console.log(result.result.metadata.description);
+
+      console.log("\nComplete!");
     },
   };
