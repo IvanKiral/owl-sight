@@ -1,4 +1,3 @@
-import { GoogleGenAI } from "@google/genai";
 import { type WithError, success, error } from "shared";
 
 type GeminiResponse = {
@@ -11,6 +10,7 @@ const callGemini = async (
   contents: string,
 ): Promise<WithError<GeminiResponse, string>> => {
   try {
+    const { GoogleGenAI } = await import("@google/genai");
     const ai = new GoogleGenAI({ apiKey });
 
     const response = await ai.models.generateContent({
