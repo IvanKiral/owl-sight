@@ -3,12 +3,13 @@ import { createWhisperArgs } from "./whisperCmdArgs.js";
 import { runWhisper } from "./runWhisper.js";
 import * as fs from "fs/promises";
 import * as path from "node:path";
+import { WithError, success, error } from "shared";
 
 export const transcribe = async (
   filePath: string,
   folderPath: string,
   options: Omit<WhisperOptions, "audioPath">,
-): Promise<string> => {
+): Promise<WithError<string, string>> => {
   try {
     const whisperArgs = createWhisperArgs({
       ...options,
@@ -17,9 +18,12 @@ export const transcribe = async (
     });
     await runWhisper(whisperArgs);
 
-    return fs.readFile(path.join(folderPath, "audio.txt"), "utf8");
+    const transcription = await fs.readFile(
+      path.join(folderPath, "audio.txt"),
+      "utf8",
+    );
+    return success(transcription);
   } catch (e) {
-    console.error("whisper failed to transcribe:", e);
-    throw new Error(`Failed to transcribe: ${e}`);
+    return error(`Failed to transcribe: ${e}`);
   }
 };
