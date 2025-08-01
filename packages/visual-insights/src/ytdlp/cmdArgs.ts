@@ -5,24 +5,30 @@ import type {
 } from "./ytdlpAudioTypes.js";
 
 // Supported browsers for cookie extraction
-export type SupportedBrowser =
-  | "brave"
-  | "chrome"
-  | "chromium"
-  | "edge"
-  | "firefox"
-  | "opera"
-  | "safari"
-  | "vivaldi"
-  | "whale";
+export const SUPPORTED_BROWSERS = [
+  "brave",
+  "chrome",
+  "chromium",
+  "edge",
+  "firefox",
+  "opera",
+  "safari",
+  "vivaldi",
+  "whale",
+] as const;
+
+export type SupportedBrowser = typeof SUPPORTED_BROWSERS[number];
 
 // Keyring options for Linux Chromium decryption
-export type Keyring =
-  | "basictext"
-  | "gnomekeyring"
-  | "kwallet"
-  | "kwallet5"
-  | "kwallet6";
+export const KEYRINGS = [
+  "basictext",
+  "gnomekeyring",
+  "kwallet",
+  "kwallet5",
+  "kwallet6",
+] as const;
+
+export type Keyring = typeof KEYRINGS[number];
 
 // Cookie configuration options
 export type CookieConfig =
