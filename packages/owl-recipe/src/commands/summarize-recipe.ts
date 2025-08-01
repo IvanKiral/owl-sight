@@ -17,7 +17,8 @@ import { callGemini } from "../lib/gemini.js";
 
 interface SummarizeRecipeOptions {
   url: string;
-  language?: WhisperLanguage;
+  videoLanguage?: WhisperLanguage;
+  outputLanguage?: WhisperLanguage;
   cookiesFromBrowser?: SupportedBrowser;
   browserProfile?: string;
   keyring?: Keyring;
@@ -36,11 +37,18 @@ export const summarizeRecipeCommand: CommandModule<{}, SummarizeRecipeOptions> =
           type: "string",
           demandOption: true,
         })
-        .option("language", {
+        .option("video-language", {
           describe: "Language of the video audio for transcription",
           type: "string",
           choices: WHISPER_LANGUAGES,
-          alias: "l",
+          alias: "video-lang",
+        } as const)
+        .option("output-language", {
+          describe: "Language for the generated recipe output",
+          type: "string",
+          choices: WHISPER_LANGUAGES,
+          alias: "output-lang",
+          default: "en",
         } as const)
         .option("cookies-from-browser", {
           describe:
@@ -73,8 +81,16 @@ export const summarizeRecipeCommand: CommandModule<{}, SummarizeRecipeOptions> =
           "Summarize recipe from YouTube video",
         )
         .example(
-          "$0 summarize-recipe https://youtube.com/watch?v=example -l es",
-          "Summarize Spanish recipe from YouTube video",
+          "$0 summarize-recipe https://youtube.com/watch?v=example --video-language es",
+          "Transcribe Spanish video, output in English",
+        )
+        .example(
+          "$0 summarize-recipe https://youtube.com/watch?v=example --output-language es",
+          "Transcribe English video, output in Spanish",
+        )
+        .example(
+          "$0 summarize-recipe https://youtube.com/watch?v=example --video-lang es --output-lang fr",
+          "Transcribe Spanish video, output in French",
         )
         .example(
           "$0 summarize-recipe https://youtube.com/watch?v=example -c chrome",
@@ -95,7 +111,7 @@ export const summarizeRecipeCommand: CommandModule<{}, SummarizeRecipeOptions> =
         whisperOptions: {
           verbose: "False",
           model: "turbo",
-          ...(argv.language && { language: argv.language }),
+          ...(argv.videoLanguage && { language: argv.videoLanguage }),
         },
       });
 
@@ -115,7 +131,7 @@ export const summarizeRecipeCommand: CommandModule<{}, SummarizeRecipeOptions> =
       const prompt = createRecipePrompt(
         result.result.metadata.description ?? "",
         result.result.transcription,
-        argv.language || "en",
+        argv.outputLanguage || "en",
       );
 
       // Call Gemini API
