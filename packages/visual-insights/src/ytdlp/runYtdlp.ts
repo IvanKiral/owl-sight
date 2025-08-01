@@ -1,8 +1,10 @@
 import { spawn } from "node:child_process";
 
-export const runYtDlp = (url: string, args: ReadonlyArray<string> = []): Promise<void> => {
+export const runYtDlp = (
+  url: string,
+  args: ReadonlyArray<string> = [],
+): Promise<void> => {
   return new Promise((resolve, reject) => {
-    // Append the URL as the last argument
     const cmdArgs = [...args, url];
     const yt = spawn("yt-dlp", cmdArgs, {
       stdio: ["ignore", "pipe", "pipe"],
@@ -13,8 +15,9 @@ export const runYtDlp = (url: string, args: ReadonlyArray<string> = []): Promise
 
     yt.on("error", (err) => reject(new Error(`Spawn error: ${err.message}`)));
     yt.on("close", (code) =>
-      code === 0 ? resolve() : reject(new Error(`yt-dlp exited with code ${code}`)),
+      code === 0
+        ? resolve()
+        : reject(new Error(`yt-dlp exited with code ${code}`)),
     );
   });
 };
-

@@ -1,27 +1,25 @@
-import { spawn } from "node:child_process";
 import { WhisperOptions } from "./whisperTypes.js";
 import { createWhisperArgs } from "./whisperCmdArgs.js";
+import { runWhisper } from "./runWhisper.js";
+import * as fs from "fs/promises";
+import * as path from "node:path";
 
-export const transcribe = async (options: WhisperOptions): Promise<string> => {
-  const result = spawn("whisper", createWhisperArgs(options), {
-    stdio: ["ignore", "pipe", "pipe"],
-  });
-
-  return new Promise((resolve, reject) => {
-    result.stdout.on("data", (data) => {
-      console.log(data.toString());
+export const transcribe = async (
+  filePath: string,
+  folderPath: string,
+  options: Omit<WhisperOptions, "audioPath">,
+): Promise<string> => {
+  try {
+    const whisperArgs = createWhisperArgs({
+      ...options,
+      audioPath: filePath,
+      outputDir: folderPath,
     });
+    await runWhisper(whisperArgs);
 
-    result.stderr.on("data", (data) => {
-      console.error(data.toString());
-    });
-
-    result.on("close", (code) => {
-      if (code !== 0) {
-        reject(new Error(`Whisper process exited with code ${code}`));
-      }
-
-      resolve(result.stdout.toString());
-    });
-  });
+    return fs.readFile(path.join(folderPath, "audio.txt"), "utf8");
+  } catch (e) {
+    console.error("whisper failed to transcribe:", e);
+    throw new Error(`Failed to transcribe: ${e}`);
+  }
 };

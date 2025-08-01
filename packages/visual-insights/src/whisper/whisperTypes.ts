@@ -141,7 +141,7 @@ export type WhisperOptions = {
   threads?: number;
   /** Whether to perform inference in fp16 (16-bit floating point). Reduces memory usage */
   fp16?: boolean;
-  verbose?: boolean;
+  verbose?: "True" | "False";
   /** If gzip compression ratio exceeds this value, treat decoding as failed */
   compressionRatioThreshold?: number;
   /** If average log probability is below this value, treat decoding as failed */

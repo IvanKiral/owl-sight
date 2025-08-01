@@ -1,18 +1,13 @@
-import * as os from "node:os";
 import * as path from "node:path";
-import { runYtDlp } from "./ytdlp.js";
 import {
-  AudioFormat,
-  AudioQuality,
-  FormatSelection,
-} from "./ytdlp/ytdlpAudioTypes.js";
-import { createYtDlpExtractAudioArgs } from "./ytdlp/cmdArgs.js";
+  AudioExtractionArgs,
+  createYtDlpExtractAudioArgs,
+} from "./ytdlp/cmdArgs.js";
+import { runYtDlp } from "./ytdlp/runYtdlp.js";
 
-export type YtDlpAudioOptions = Partial<{
-  audioFormat?: AudioFormat;
-  audioQuality?: AudioQuality;
-  format?: FormatSelection;
-}>;
+export type YtDlpAudioOptions = Partial<
+  Pick<AudioExtractionArgs, "audioFormat" | "audioQuality" | "format" | "quiet">
+>;
 
 export const downloadDataFromVideo = async (
   url: string,
@@ -30,11 +25,11 @@ export const downloadDataFromVideo = async (
     format: options?.format ?? "bestaudio/best",
     outputPath: outTemplate,
     writeInfoJson: options?.metadata ?? true,
+    quiet: options?.quiet ?? false,
   });
 
   try {
     await runYtDlp(url, ytdlArgs as string[]);
-    console.log("Download Complete!");
   } catch (e) {
     console.error("yt-dlp failed:", e);
     throw e;
