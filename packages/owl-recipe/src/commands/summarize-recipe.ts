@@ -11,6 +11,9 @@ import type {
   Keyring,
 } from "visual-insights";
 import type { CommandModule, ArgumentsCamelCase } from "yargs";
+import { getGeminiApiKey } from "../lib/geminiKey.js";
+import { createRecipePrompt } from "../lib/recipePrompt.js";
+import { callGemini } from "../lib/gemini.js";
 
 interface SummarizeRecipeOptions {
   url: string;
@@ -101,11 +104,40 @@ export const summarizeRecipeCommand: CommandModule<{}, SummarizeRecipeOptions> =
         process.exit(1);
       }
 
-      console.log("\n=== TRANSCRIPTION ===");
-      console.log(result.result.transcription);
+      // Get Gemini API key
+      const apiKeyResult = await getGeminiApiKey();
+      if (!apiKeyResult.success) {
+        console.error("Error getting Gemini API key:", apiKeyResult.error);
+        process.exit(1);
+      }
 
-      console.log("\n=== DESCRIPTION ===");
-      console.log(result.result.metadata.description);
+      // Create recipe prompt
+      const prompt = createRecipePrompt(
+        result.result.metadata.description ?? "",
+        result.result.transcription,
+        argv.language || "en",
+      );
+
+      // Call Gemini API
+      const geminiResult = await callGemini(
+        apiKeyResult.result,
+        "gemini-2.0-flash-001",
+        prompt,
+      );
+
+      if (!geminiResult.success) {
+        console.error("Error calling Gemini API:", geminiResult.error);
+        process.exit(1);
+      }
+
+      console.log("\n=== STRUCTURED RECIPE ===");
+      try {
+        const recipe = JSON.parse(geminiResult.result.text);
+        console.log(JSON.stringify(recipe, null, 2));
+      } catch (parseError) {
+        console.log("Raw response (could not parse as JSON):");
+        console.log(geminiResult.result.text);
+      }
 
       console.log("\nComplete!");
     },
