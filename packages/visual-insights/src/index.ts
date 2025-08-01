@@ -7,3 +7,10 @@ export {
   type WhisperLanguage,
   WHISPER_LANGUAGES,
 } from "./whisper/whisperTypes.js";
+export {
+  type CookieConfig,
+  type SupportedBrowser,
+  type Keyring,
+  SUPPORTED_BROWSERS,
+  KEYRINGS,
+} from "./ytdlp/cmdArgs.js";

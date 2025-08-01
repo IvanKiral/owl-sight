@@ -7,7 +7,7 @@ import { runYtDlp } from "./ytdlp/runYtdlp.js";
 import { WithError, success, error } from "shared";
 
 export type YtDlpAudioOptions = Partial<
-  Pick<AudioExtractionArgs, "audioFormat" | "audioQuality" | "format" | "quiet">
+  Pick<AudioExtractionArgs, "audioFormat" | "audioQuality" | "format" | "quiet" | "cookies">
 >;
 
 export const downloadDataFromVideo = async (
@@ -27,6 +27,7 @@ export const downloadDataFromVideo = async (
     outputPath: outTemplate,
     writeInfoJson: options?.metadata ?? true,
     quiet: options?.quiet ?? false,
+    cookies: options?.cookies,
   });
 
   try {
