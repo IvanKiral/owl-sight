@@ -8,7 +8,9 @@
   "bin": {
     "owl-recipe": "./dist/index.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -b",
     "dev": "tsx src/index.ts",
@@ -16,10 +18,14 @@
     "lint": "eslint src --ext .ts"
   },
   "dependencies": {
-    "yargs": "^18.0.0",
-    "visual-insights": "workspace:*"
+    "@google/genai": "^1.12.0",
+    "prompts": "^2.4.2",
+    "shared": "workspace:*",
+    "visual-insights": "workspace:*",
+    "yargs": "^18.0.0"
   },
   "devDependencies": {
+    "@types/prompts": "^2.4.9",
     "@types/yargs": "^17.0.33",
     "typescript": "^5.8.3"
   },
