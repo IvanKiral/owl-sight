@@ -103,6 +103,8 @@ export const summarizeRecipeCommand: CommandModule<{}, SummarizeRecipeOptions> =
     },
 
     handler: async (argv) => {
+      console.log("🎬 Processing video:", argv.url);
+
       const result = await getVideoData(argv.url, {
         ytdlpOptions: {
           quiet: true,
@@ -120,6 +122,8 @@ export const summarizeRecipeCommand: CommandModule<{}, SummarizeRecipeOptions> =
         process.exit(1);
       }
 
+      console.log("✅ Video transcribed successfully");
+
       // Get Gemini API key
       const apiKeyResult = await getGeminiApiKey();
       if (!apiKeyResult.success) {
@@ -135,6 +139,7 @@ export const summarizeRecipeCommand: CommandModule<{}, SummarizeRecipeOptions> =
       );
 
       // Call Gemini API
+      console.log("Generating recipe...");
       const geminiResult = await callGemini(
         apiKeyResult.result,
         "gemini-2.0-flash-001",
@@ -146,6 +151,7 @@ export const summarizeRecipeCommand: CommandModule<{}, SummarizeRecipeOptions> =
         process.exit(1);
       }
 
+      console.log("✨ Recipe generated successfully!");
       console.log("\n=== STRUCTURED RECIPE ===");
       try {
         const recipe = JSON.parse(geminiResult.result.text);
