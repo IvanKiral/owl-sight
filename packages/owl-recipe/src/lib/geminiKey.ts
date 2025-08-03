@@ -19,21 +19,23 @@ export const getGeminiApiKey = async (): Promise<WithError<string, string>> => {
 
 const promptForApiKey = async (): Promise<WithError<string, string>> => {
   const enquirer = (await import("enquirer")).default;
-  
+
   try {
     const response = await enquirer.prompt({
       type: "password",
       name: "apiKey",
       message: "Enter your Gemini API key:",
     });
-    
-    const apiKey = (response as any).apiKey;
-    
-    if (!apiKey || apiKey.length === 0) {
+
+    if (
+      !("apiKey" in response) ||
+      typeof response.apiKey !== "string" ||
+      response.apiKey.length === 0
+    ) {
       return error("API key is required to continue");
     }
 
-    return success(apiKey);
+    return success(response.apiKey);
   } catch (err) {
     return error("API key is required to continue");
   }
