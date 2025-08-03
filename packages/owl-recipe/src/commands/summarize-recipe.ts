@@ -38,7 +38,7 @@ export const summarizeRecipeCommand: CommandModule<{}, SummarizeRecipeOptions> =
           demandOption: true,
         })
         .option("video-language", {
-          describe: "Language of the video audio for transcription",
+          describe: "Language of the video audio to improve transcription accuracy",
           type: "string",
           choices: WHISPER_LANGUAGES,
           alias: "video-lang",
