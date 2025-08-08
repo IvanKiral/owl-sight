@@ -66,6 +66,9 @@ importers:
 
   packages/recipe-book:
     dependencies:
+      '@corvu/drawer':
+        specifier: ^0.2.4
+        version: 0.2.4(solid-js@1.9.7)
       fuse.js:
         specifier: ^7.1.0
         version: 7.1.0
@@ -344,6 +347,26 @@ packages:
   '@colors/colors@1.6.0':
     resolution: {integrity: sha512-Ir+AOibqzrIsL6ajt3Rz3LskB7OiMVHqltZmspbW/TJuTVuyOMirVqAkjfY6JISiLHgyNqicAC8AyHHGzNd/dA==}
     engines: {node: '>=0.1.90'}
+
+  '@corvu/dialog@0.2.4':
+    resolution: {integrity: sha512-n54vJq+fOy8GVrnYBdJpD6JXNuyx7LOeMrRxwzAvZnYGpW8+AA12tnb/P/2emJj/HjOO5otheGKb0breshdFlA==}
+    peerDependencies:
+      solid-js: ^1.8
+
+  '@corvu/drawer@0.2.4':
+    resolution: {integrity: sha512-7jQoGZ8ROB9CmXam2nMY2wEskU3IoFwZQywkF/7vrBc/edGsPv7mOVQ1GN6G+4nd7nrMZ3UtqHAhmRh9V0azlw==}
+    peerDependencies:
+      solid-js: ^1.8
+
+  '@corvu/utils@0.3.2':
+    resolution: {integrity: sha512-ZWlyWEE8qV9+CB9OAyo2bTrZGXQN9ZeM+JfYv89zoR+lRACKTDuoOZEdiyL8Uc7U5dUSH1uTqKhTTnaHWb+wZA==}
+    peerDependencies:
+      solid-js: ^1.8
+
+  '@corvu/utils@0.4.2':
+    resolution: {integrity: sha512-Ox2kYyxy7NoXdKWdHeDEjZxClwzO4SKM8plAaVwmAJPxHMqA0rLOoAsa+hBDwRLpctf+ZRnAd/ykguuJidnaTA==}
+    peerDependencies:
+      solid-js: ^1.8
 
   '@csstools/color-helpers@5.0.2':
     resolution: {integrity: sha512-JqWH1vsgdGcw2RR6VliXXdA0/59LttzlU8UlRT/iUUsEeWfYq8I+K0yhihEUTTHLRm1EXvpsCx3083EU15ecsA==}
@@ -732,6 +755,15 @@ packages:
 
   '@fastify/busboy@3.1.1':
     resolution: {integrity: sha512-5DGmA8FTdB2XbDeEwc/5ZXBl6UbBAyBOOLlPuBnZ/N1SwdH9Ii+cOX3tBROlDgcTXxjOYnLMVoKk9+FXAw0CJw==}
+
+  '@floating-ui/core@1.7.3':
+    resolution: {integrity: sha512-sGnvb5dmrJaKEZ+LDIpguvdX3bDlEllmv4/ClQ9awcmCZrlx5jQyyMWFM5kBI+EyNOCDDiKk8il0zeuX3Zlg/w==}
+
+  '@floating-ui/dom@1.7.3':
+    resolution: {integrity: sha512-uZA413QEpNuhtb3/iIKoYMSK07keHPYeXF02Zhd6e213j+d1NamLix/mCLxBUDW/Gx52sPH2m+chlUsyaBs/Ag==}
+
+  '@floating-ui/utils@0.2.10':
+    resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
 
   '@google/genai@1.12.0':
     resolution: {integrity: sha512-JBkQsULVexdM9zY4iXbm3A2dJ7El/hSPGCnxuRWPJNgeqcfYuyUnPTSy+I/v+MvTbz/occVmONSD6wn+17QLkg==}
@@ -1160,6 +1192,21 @@ packages:
   '@sindresorhus/merge-streams@2.3.0':
     resolution: {integrity: sha512-LtoMMhxAlorcGhmFYI+LhPgbPZCkgP6ra1YL604EeF6U98pLlQ3iWIGMdWSC+vWmPBWBNgmDBAhnAobLROJmwg==}
     engines: {node: '>=18'}
+
+  '@solid-primitives/memo@1.4.3':
+    resolution: {integrity: sha512-CA+n9yaoqbYm+My5tY2RWb6EE16tVyehM4GzwQF4vCwvjYPAYk1JSRIVuMC0Xuj5ExD2XQJE5E2yAaKY2HTUsg==}
+    peerDependencies:
+      solid-js: ^1.6.12
+
+  '@solid-primitives/scheduled@1.5.2':
+    resolution: {integrity: sha512-/j2igE0xyNaHhj6kMfcUQn5rAVSTLbAX+CDEBm25hSNBmNiHLu2lM7Usj2kJJ5j36D67bE8wR1hBNA8hjtvsQA==}
+    peerDependencies:
+      solid-js: ^1.6.12
+
+  '@solid-primitives/utils@6.3.2':
+    resolution: {integrity: sha512-hZ/M/qr25QOCcwDPOHtGjxTD8w2mNyVAYvcfgwzBHq2RwNqHNdDNsMZYap20+ruRwW4A3Cdkczyoz0TSxLCAPQ==}
+    peerDependencies:
+      solid-js: ^1.6.12
 
   '@solidjs/meta@0.29.4':
     resolution: {integrity: sha512-zdIWBGpR9zGx1p1bzIPqF5Gs+Ks/BH8R6fWhmUa/dcK1L2rUC8BAcZJzNRYBQv74kScf1TSOs0EY//Vd/I0V8g==}
@@ -4114,13 +4161,38 @@ packages:
   smob@1.5.0:
     resolution: {integrity: sha512-g6T+p7QO8npa+/hNx9ohv1E5pVCmWrVCUzUXJyLdMmftX6ER0oiWY/w9knEonLpnOp6b6FenKnMfR8gqwWdwig==}
 
+  solid-dismissible@0.1.1:
+    resolution: {integrity: sha512-9kcKBJIMdS+586cA1g63HYWxKh3h89leeNHbPZ1csYjuni+NvPBtNr11l0iEX2AKKEt6FHk6qNhc/gjoYAW1pA==}
+    peerDependencies:
+      solid-js: ^1.8
+
+  solid-focus-trap@0.1.9:
+    resolution: {integrity: sha512-LTyNki6GUJPRLXV5uMWPkYClB07SUMubbr2EkAddiR0CJCF/I283txilMU9RURSr/P8EewMfXWu2o3aWrK7A5A==}
+    peerDependencies:
+      solid-js: ^1.8
+
   solid-js@1.9.7:
     resolution: {integrity: sha512-/saTKi8iWEM233n5OSi1YHCCuh66ZIQ7aK2hsToPe4tqGm7qAejU1SwNuTPivbWAYq7SjuHVVYxxuZQNRbICiw==}
+
+  solid-presence@0.2.0:
+    resolution: {integrity: sha512-YM92o+jvpzX3XGaD4rLYmq/Kc2ZVh47GSCLEufHBFQQIurvZTs8SoGJxO8BJGNDxBKdcS8F3dYhW1SDXp4BNjA==}
+    peerDependencies:
+      solid-js: ^1.8
+
+  solid-prevent-scroll@0.1.10:
+    resolution: {integrity: sha512-KplGPX2GHiWJLZ6AXYRql4M127PdYzfwvLJJXMkO+CMb8Np4VxqDAg5S8jLdwlEuBis/ia9DKw2M8dFx5u8Mhw==}
+    peerDependencies:
+      solid-js: ^1.8
 
   solid-refresh@0.6.3:
     resolution: {integrity: sha512-F3aPsX6hVw9ttm5LYlth8Q15x6MlI/J3Dn+o3EQyRTtTxidepSTwAYdozt01/YA+7ObcciagGEyXIopGZzQtbA==}
     peerDependencies:
       solid-js: ^1.3
+
+  solid-transition-size@0.1.4:
+    resolution: {integrity: sha512-ocHVnbfy23CgfaH4cEUR/AFg0Y3CEL8Oh3n9Qv8OHFJgPh+zkmERKZQfi/xH5XvxDCizg8VjPrVUhiHB1Gza8g==}
+    peerDependencies:
+      solid-js: ^1.8
 
   solid-use@0.9.1:
     resolution: {integrity: sha512-UwvXDVPlrrbj/9ewG9ys5uL2IO4jSiwys2KPzK4zsnAcmEl7iDafZWW1Mo4BSEWOmQCGK6IvpmGHo1aou8iOFw==}
@@ -5291,6 +5363,33 @@ snapshots:
 
   '@colors/colors@1.6.0': {}
 
+  '@corvu/dialog@0.2.4(solid-js@1.9.7)':
+    dependencies:
+      '@corvu/utils': 0.4.2(solid-js@1.9.7)
+      solid-dismissible: 0.1.1(solid-js@1.9.7)
+      solid-focus-trap: 0.1.9(solid-js@1.9.7)
+      solid-js: 1.9.7
+      solid-presence: 0.2.0(solid-js@1.9.7)
+      solid-prevent-scroll: 0.1.10(solid-js@1.9.7)
+
+  '@corvu/drawer@0.2.4(solid-js@1.9.7)':
+    dependencies:
+      '@corvu/dialog': 0.2.4(solid-js@1.9.7)
+      '@corvu/utils': 0.4.2(solid-js@1.9.7)
+      '@solid-primitives/memo': 1.4.3(solid-js@1.9.7)
+      solid-js: 1.9.7
+      solid-transition-size: 0.1.4(solid-js@1.9.7)
+
+  '@corvu/utils@0.3.2(solid-js@1.9.7)':
+    dependencies:
+      '@floating-ui/dom': 1.7.3
+      solid-js: 1.9.7
+
+  '@corvu/utils@0.4.2(solid-js@1.9.7)':
+    dependencies:
+      '@floating-ui/dom': 1.7.3
+      solid-js: 1.9.7
+
   '@csstools/color-helpers@5.0.2': {}
 
   '@csstools/css-calc@2.1.4(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)':
@@ -5527,6 +5626,17 @@ snapshots:
       levn: 0.4.1
 
   '@fastify/busboy@3.1.1': {}
+
+  '@floating-ui/core@1.7.3':
+    dependencies:
+      '@floating-ui/utils': 0.2.10
+
+  '@floating-ui/dom@1.7.3':
+    dependencies:
+      '@floating-ui/core': 1.7.3
+      '@floating-ui/utils': 0.2.10
+
+  '@floating-ui/utils@0.2.10': {}
 
   '@google/genai@1.12.0':
     dependencies:
@@ -5961,6 +6071,20 @@ snapshots:
   '@sindresorhus/is@7.0.2': {}
 
   '@sindresorhus/merge-streams@2.3.0': {}
+
+  '@solid-primitives/memo@1.4.3(solid-js@1.9.7)':
+    dependencies:
+      '@solid-primitives/scheduled': 1.5.2(solid-js@1.9.7)
+      '@solid-primitives/utils': 6.3.2(solid-js@1.9.7)
+      solid-js: 1.9.7
+
+  '@solid-primitives/scheduled@1.5.2(solid-js@1.9.7)':
+    dependencies:
+      solid-js: 1.9.7
+
+  '@solid-primitives/utils@6.3.2(solid-js@1.9.7)':
+    dependencies:
+      solid-js: 1.9.7
 
   '@solidjs/meta@0.29.4(solid-js@1.9.7)':
     dependencies:
@@ -9463,11 +9587,31 @@ snapshots:
 
   smob@1.5.0: {}
 
+  solid-dismissible@0.1.1(solid-js@1.9.7):
+    dependencies:
+      '@corvu/utils': 0.4.2(solid-js@1.9.7)
+      solid-js: 1.9.7
+
+  solid-focus-trap@0.1.9(solid-js@1.9.7):
+    dependencies:
+      '@corvu/utils': 0.4.2(solid-js@1.9.7)
+      solid-js: 1.9.7
+
   solid-js@1.9.7:
     dependencies:
       csstype: 3.1.3
       seroval: 1.3.2
       seroval-plugins: 1.3.2(seroval@1.3.2)
+
+  solid-presence@0.2.0(solid-js@1.9.7):
+    dependencies:
+      '@corvu/utils': 0.4.2(solid-js@1.9.7)
+      solid-js: 1.9.7
+
+  solid-prevent-scroll@0.1.10(solid-js@1.9.7):
+    dependencies:
+      '@corvu/utils': 0.4.2(solid-js@1.9.7)
+      solid-js: 1.9.7
 
   solid-refresh@0.6.3(solid-js@1.9.7):
     dependencies:
@@ -9477,6 +9621,11 @@ snapshots:
       solid-js: 1.9.7
     transitivePeerDependencies:
       - supports-color
+
+  solid-transition-size@0.1.4(solid-js@1.9.7):
+    dependencies:
+      '@corvu/utils': 0.3.2(solid-js@1.9.7)
+      solid-js: 1.9.7
 
   solid-use@0.9.1(solid-js@1.9.7):
     dependencies:
