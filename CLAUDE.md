@@ -29,7 +29,6 @@ pnpm build      # Build all packages via Turbo
 ```bash
 pnpm biome:check         # Run Biome checks
 pnpm biome:check:fix     # Fix Biome issues automatically
-pnpm lint                # Run ESLint across all packages
 ```
 
 ### Run the CLI
@@ -72,6 +71,16 @@ The following tools must be installed on your system:
   }
   ```
 
-  ## Commits
-  - Use clear messages
-  - Do not mention yourself in the messages
+## Development Workflow
+
+**IMPORTANT: After completing any coding task, you MUST run the following command to ensure code quality:**
+
+```bash
+pnpm biome:check:fix     # Fix formatting and linting issues automatically
+```
+
+Only mark tasks as complete after these checks pass successfully.
+
+## Commits
+- Use clear messages
+- Do not mention yourself in the messages

@@ -6,6 +6,7 @@
     "build": "turbo run build",
     "biome:check": "biome check .",
     "biome:check:fix": "biome check . --write",
+    "biome:lint": "biome lint .",
     "bootstrap": "pnpm install",
     "test": "turbo run test"
   },
@@ -13,8 +14,9 @@
     "@kontent-ai/biome-config": "^0.4.0",
     "@kontent-ai/eslint-config": "^2.0.1",
     "@types/node": "^24.0.13",
-    "biome": "^0.3.3",
+    "@biomejs/biome": "^2.1.2",
     "pnpm": "^10.13.1",
+    "rollup-plugin-visualizer": "^6.0.3",
     "tsx": "^4.0.0",
     "turbo": "^2.5.5",
     "typescript": "^5.8.3",
