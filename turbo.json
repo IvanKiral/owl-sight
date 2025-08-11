@@ -11,6 +11,9 @@
     "test": {
       "outputs": []
     },
+    "typecheck": {
+      "outputs": []
+    },
     "biome:check": {},
     "biome:check:fix": {
       "cache": false

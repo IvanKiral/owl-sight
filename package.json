@@ -8,7 +8,8 @@
     "biome:check:fix": "biome check . --write",
     "biome:lint": "biome lint .",
     "bootstrap": "pnpm install",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
     "@kontent-ai/biome-config": "^0.4.0",
