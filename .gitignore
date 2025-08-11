@@ -24,3 +24,5 @@ yarn-debug.log*
 .turbo
 
 research/
+
+bundle-report.html
