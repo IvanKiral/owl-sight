@@ -5,7 +5,7 @@ import { hideBin } from "yargs/helpers";
 import { summarizeRecipeCommand } from "./commands/summarize-recipe.js";
 
 const cli = yargs(hideBin(process.argv))
-  .scriptName("owl-recipe")
+  .scriptName("owl-cli")
   .usage("$0 <command> [options]")
   .command(summarizeRecipeCommand)
   .demandCommand(1, "Please specify a command")

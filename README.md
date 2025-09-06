@@ -6,7 +6,7 @@ A video insight extraction tool that downloads audio from videos and transcribes
 
 This monorepo contains the following packages:
 
-- **packages/owl-recipe**: Main CLI tool for recipe summarization and analysis
+- **packages/owl-cli**: Main CLI tool for recipe summarization and analysis
 - **packages/visual-insights**: Core library with download and transcription functionality
 
 ## Prerequisites
@@ -59,17 +59,29 @@ Before using owl-sight, you need to install these global dependencies:
 
 ## Installing the CLI Globally
 
-To make the `owl-recipe` CLI available system-wide:
+To make the `owl-cli` CLI available system-wide, you can use the convenient npm script from the root:
 
 ```bash
-cd packages/owl-recipe
+npm run link:cli
+```
+
+Or manually from the package directory:
+
+```bash
+cd packages/owl-cli
 pnpm link --global
 ```
 
 After installation, you can use the CLI from anywhere:
 
 ```bash
-owl-recipe --help
+owl-cli --help
+```
+
+To remove the global link:
+
+```bash
+npm run unlink:cli
 ```
 
 ## Development
@@ -85,14 +97,14 @@ pnpm lint                # Run ESLint across all packages
 ### Running the CLI Locally
 
 ```bash
-pnpm --filter owl-recipe start
+pnpm --filter owl-cli start
 ```
 
 ### Building Individual Packages
 
 ```bash
 pnpm --filter visual-insights build
-pnpm --filter owl-recipe build
+pnpm --filter owl-cli build
 pnpm --filter cli build
 ```
 
