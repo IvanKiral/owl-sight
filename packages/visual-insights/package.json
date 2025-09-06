@@ -12,8 +12,9 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "shared": "workspace:*",
     "camelcase-keys": "^9.1.3",
+    "execa": "^9.6.0",
+    "shared": "workspace:*",
     "zod": "^4.0.10"
   }
 }
