@@ -3,11 +3,13 @@
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { recipeCommand } from "./commands/recipe/index.js";
+import { videoCommand } from "./commands/video/index.js";
 
 const cli = yargs(hideBin(process.argv))
   .scriptName("owl-cli")
   .usage("$0 <command> [options]")
   .command(recipeCommand)
+  .command(videoCommand)
   .demandCommand(1, "Please specify a command")
   .strict()
   .help()
