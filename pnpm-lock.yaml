@@ -42,7 +42,7 @@ importers:
         specifier: workspace:*
         version: link:../visual-insights
 
-  packages/owl-recipe:
+  packages/owl-cli:
     dependencies:
       '@google/genai':
         specifier: ^1.12.0

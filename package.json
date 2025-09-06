@@ -7,7 +7,9 @@
     "biome:check": "biome check .",
     "biome:check:fix": "biome check . --write",
     "bootstrap": "pnpm install",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "link:cli": "cd packages/owl-cli && pnpm link --global",
+    "unlink:cli": "cd packages/owl-cli && pnpm unlink --global"
   },
   "devDependencies": {
     "@kontent-ai/biome-config": "^0.4.0",

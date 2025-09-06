@@ -1,12 +1,12 @@
 {
-  "name": "owl-recipe",
+  "name": "owl-cli",
   "version": "0.1.0",
   "description": "CLI tool for recipe summarization and analysis",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "owl-recipe": "./dist/index.js"
+    "owl-cli": "./dist/index.js"
   },
   "files": [
     "dist"
