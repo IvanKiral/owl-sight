@@ -1,21 +1,13 @@
-import { spawn } from "node:child_process";
+import { execa } from "execa";
 
-export const runWhisper = (args: ReadonlyArray<string>): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    const whisper = spawn("whisper", args, {
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-
-    whisper.stdout.on("data", (chunk) => process.stdout.write(chunk));
-    whisper.stderr.on("data", (chunk) => process.stderr.write(chunk));
-
-    whisper.on("error", (err) =>
-      reject(new Error(`Spawn error: ${err.message}`)),
-    );
-    whisper.on("close", (code) =>
-      code === 0
-        ? resolve()
-        : reject(new Error(`whisper exited with code ${code}`)),
-    );
+export const runWhisper = (args: ReadonlyArray<string>) => {
+  return execa("whisper", args, {
+    stdio: "inherit",
+    reject: true,
+  }).catch((error: unknown) => {
+    if (error && typeof error === "object" && "command" in error && "message" in error) {
+      throw new Error(`whisper failed: ${error.message}\nCommand: ${error.command}`);
+    }
+    throw new Error(`Failed to run whisper: ${error instanceof Error ? error.message : String(error)}`);
   });
 };
