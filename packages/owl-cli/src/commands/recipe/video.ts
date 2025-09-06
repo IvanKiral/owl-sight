@@ -6,14 +6,14 @@ import {
 } from "visual-insights";
 import type {
   WhisperLanguage,
-  CookieConfig,
   SupportedBrowser,
   Keyring,
 } from "visual-insights";
-import type { CommandModule, ArgumentsCamelCase } from "yargs";
+import type { CommandModule } from "yargs";
 import { getGeminiApiKey } from "../../lib/geminiKey.js";
 import { createRecipePrompt } from "../../lib/recipePrompt.js";
 import { callGemini } from "../../lib/gemini.js";
+import { createCookieConfig } from "../../lib/cookieConfig.js";
 
 type VideoRecipeOptions = {
   url: string;
@@ -164,19 +164,3 @@ export const videoCommand: CommandModule<{}, VideoRecipeOptions> = {
   },
 };
 
-const createCookieConfig = (
-  argv: ArgumentsCamelCase<VideoRecipeOptions>,
-): CookieConfig => {
-  if (argv.cookiesFile) {
-    return { type: "file", path: argv.cookiesFile };
-  }
-  if (argv.cookiesFromBrowser) {
-    return {
-      type: "browser",
-      browser: argv.cookiesFromBrowser,
-      profile: argv.browserProfile,
-      keyring: argv.keyring,
-    };
-  }
-  return undefined;
-};
