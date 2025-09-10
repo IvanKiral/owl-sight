@@ -1,4 +1,5 @@
-import type { JSONSchema4 } from "json-schema";
+import type { JSONSchema } from "json-schema-to-typescript";
+
 export const DEFAULT_RECIPE_SCHEMA = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
   title: "Recipe Schema",
@@ -67,4 +68,4 @@ export const DEFAULT_RECIPE_SCHEMA = {
   },
   required: ["title", "ingredients", "instructions"],
   additionalProperties: false,
-} as const satisfies JSONSchema4;
+} as const satisfies JSONSchema;
