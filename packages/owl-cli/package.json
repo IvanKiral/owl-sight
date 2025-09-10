@@ -15,12 +15,15 @@
     "build": "tsc -b",
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js",
-    "lint": "eslint src --ext .ts"
+    "lint": "eslint src --ext .ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "@google/genai": "^1.12.0",
     "enquirer": "^2.4.1",
+    "json-schema-to-typescript": "^15.0.4",
     "shared": "workspace:*",
+    "ts-pattern": "^5.8.0",
     "visual-insights": "workspace:*",
     "yargs": "^18.0.0"
   },
