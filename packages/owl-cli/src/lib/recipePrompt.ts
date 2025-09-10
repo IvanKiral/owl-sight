@@ -14,7 +14,7 @@ ${options.description}
 Transcribed Audio:
 ${options.transcribedText}
 
-Please extract and structure this information into JSON with the following format:
+Please extract and structure this information into JSON with the strictly following format. Add only values specified in the schema:
 ${options.schema}
 
 If any information is not available, use null for that field.
