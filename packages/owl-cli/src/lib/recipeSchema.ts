@@ -4,6 +4,7 @@ import path from "node:path";
 import * as os from "node:os";
 import * as fs from "node:fs/promises";
 import { DEFAULT_RECIPE_SCHEMA } from "./constants/defaultRecipeSchema.js";
+import { compileFromFile } from "json-schema-to-typescript";
 
 const getUserConfigDirectory = () => {
   const platform = process.platform;
@@ -15,7 +16,12 @@ const getUserConfigDirectory = () => {
       return path.join(base, APP_NAME);
     })
     .with("darwin", () => {
-      return path.join(os.homedir(), "Library", "Application Support", APP_NAME);
+      return path.join(
+        os.homedir(),
+        "Library",
+        "Application Support",
+        APP_NAME
+      );
     })
     .with("win32", () => {
       const base = env.APPDATA ?? path.join(os.homedir(), "AppData", "Roaming");
@@ -26,18 +32,35 @@ const getUserConfigDirectory = () => {
     });
 };
 
-const userRecipeConfigSchemaPath = path.join(getUserConfigDirectory(), SCHEMA_FILENAME);
+const fileExists = async (path: string) => {
+  try {
+    await fs.stat(path);
+    return true;
+  } catch (err) {
+    if (err instanceof Error && err.message.includes("ENOENT")) {
+      return false;
+    }
+    throw err;
+  }
+};
 
-export const resolveRecipeSchema = async () => {
-  if (!(await fs.stat(userRecipeConfigSchemaPath))) {
-    await fs.mkdir(path.dirname(userRecipeConfigSchemaPath), { recursive: true });
+const userRecipeConfigSchemaPath = path.join(
+  getUserConfigDirectory(),
+  SCHEMA_FILENAME
+);
+
+export const resolveDefaultRecipeSchema = async () => {
+  if (!(await fileExists(userRecipeConfigSchemaPath))) {
+    await fs.mkdir(path.dirname(userRecipeConfigSchemaPath), {
+      recursive: true,
+    });
     await fs.writeFile(
       userRecipeConfigSchemaPath,
       JSON.stringify(DEFAULT_RECIPE_SCHEMA, null, 2),
-      "utf8",
+      "utf8"
     );
   }
 
-  const raw = await fs.readFile(userRecipeConfigSchemaPath, "utf8");
-  return { path: userRecipeConfigSchemaPath, schema: JSON.parse(raw) };
+  const schema = await compileFromFile(userRecipeConfigSchemaPath);
+  return { path: userRecipeConfigSchemaPath, schema };
 };
