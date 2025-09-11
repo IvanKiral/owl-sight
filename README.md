@@ -6,7 +6,7 @@ A video insight extraction tool that downloads audio from videos and transcribes
 
 This monorepo contains the following packages:
 
-- **packages/owl-cli**: Main CLI tool for recipe summarization and analysis
+- **packages/owl-cli**: Main CLI tool for recipe summarization and analysis - [see README](packages/owl-cli/README.md)
 - **packages/visual-insights**: Core library with download and transcription functionality
 
 ## Prerequisites
