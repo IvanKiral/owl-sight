@@ -5,6 +5,7 @@ import * as os from "node:os";
 import * as fs from "node:fs/promises";
 import { DEFAULT_RECIPE_SCHEMA } from "./constants/defaultRecipeSchema.js";
 import { compileFromFile } from "json-schema-to-typescript";
+import { type WithError, success, error } from "shared";
 
 const getUserConfigDirectory = () => {
   const platform = process.platform;
@@ -32,15 +33,17 @@ const getUserConfigDirectory = () => {
     });
 };
 
-const fileExists = async (path: string) => {
+const fileExists = async (path: string): Promise<WithError<boolean, string>> => {
   try {
     await fs.stat(path);
-    return true;
+    return success(true);
   } catch (err) {
     if (err instanceof Error && err.message.includes("ENOENT")) {
-      return false;
+      return success(false);
     }
-    throw err;
+    return error(
+      `Failed to check file existence: ${err instanceof Error ? err.message : String(err)}`
+    );
   }
 };
 
@@ -49,18 +52,30 @@ export const userRecipeConfigSchemaPath = path.join(
   SCHEMA_FILENAME
 );
 
-export const resolveDefaultRecipeSchema = async () => {
-  if (!(await fileExists(userRecipeConfigSchemaPath))) {
-    await fs.mkdir(path.dirname(userRecipeConfigSchemaPath), {
-      recursive: true,
-    });
-    await fs.writeFile(
-      userRecipeConfigSchemaPath,
-      JSON.stringify(DEFAULT_RECIPE_SCHEMA, null, 2),
-      "utf8"
+export const resolveDefaultRecipeSchema = async (): Promise<WithError<{ path: string; schema: string }, string>> => {
+  const fileExistsResult = await fileExists(userRecipeConfigSchemaPath);
+  
+  if (!fileExistsResult.success) {
+    return error(fileExistsResult.error);
+  }
+  
+  try {
+    if (!fileExistsResult.result) {
+      await fs.mkdir(path.dirname(userRecipeConfigSchemaPath), {
+        recursive: true,
+      });
+      await fs.writeFile(
+        userRecipeConfigSchemaPath,
+        JSON.stringify(DEFAULT_RECIPE_SCHEMA, null, 2),
+        "utf8"
+      );
+    }
+
+    const schema = await compileFromFile(userRecipeConfigSchemaPath);
+    return success({ path: userRecipeConfigSchemaPath, schema });
+  } catch (err) {
+    return error(
+      `Failed to resolve recipe schema: ${err instanceof Error ? err.message : String(err)}`
     );
   }
-
-  const schema = await compileFromFile(userRecipeConfigSchemaPath);
-  return { path: userRecipeConfigSchemaPath, schema };
 };
