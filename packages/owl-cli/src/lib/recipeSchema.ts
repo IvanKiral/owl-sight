@@ -44,7 +44,7 @@ const fileExists = async (path: string) => {
   }
 };
 
-const userRecipeConfigSchemaPath = path.join(
+export const userRecipeConfigSchemaPath = path.join(
   getUserConfigDirectory(),
   SCHEMA_FILENAME
 );

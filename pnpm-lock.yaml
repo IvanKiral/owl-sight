@@ -53,6 +53,9 @@ importers:
       enquirer:
         specifier: ^2.4.1
         version: 2.4.1
+      execa:
+        specifier: ^9.6.0
+        version: 9.6.0
       json-schema-to-typescript:
         specifier: ^15.0.4
         version: 15.0.4
