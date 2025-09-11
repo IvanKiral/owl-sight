@@ -11,14 +11,13 @@ import type {
 } from "visual-insights";
 import type { CommandModule } from "yargs";
 import { getGeminiApiKey } from "../../lib/geminiKey.js";
-import { createRecipePrompt } from "../../lib/recipePrompt.js";
 import { callGemini } from "../../lib/gemini.js";
 import { createCookieConfig } from "../../lib/cookieConfig.js";
 import { compose } from "../helpers/commandOptionsComposer.js";
-import { yargsWithRecipeSchema } from "../helpers/withRecipeSchema.js";
-import { resolveDefaultRecipeSchema } from "../../lib/recipeSchema.js";
-import { compileFromFile } from "json-schema-to-typescript";
-import path from "node:path";
+import {
+  yargsWithRecipeSchema,
+  handleRecipePrompt,
+} from "../helpers/withRecipeSchema.js";
 import { handleOutput, yargsWithOutput } from "../helpers/withOutput.js";
 
 type VideoRecipeOptions = {
@@ -140,38 +139,29 @@ export const videoCommand: CommandModule<
 
     console.log("✅ Video transcribed successfully");
 
-    // Get Gemini API key
+    const promptResult = await handleRecipePrompt({
+      recipeSchemaPath: argv.recipeSchema,
+      transcribedText: result.result.transcription,
+      description: result.result.metadata.description ?? "",
+      outputLanguage: argv.outputLanguage || "en",
+    });
+
+    if (!promptResult.success) {
+      console.error("Error creating recipe prompt:", promptResult.error);
+      process.exit(1);
+    }
+
     const apiKeyResult = await getGeminiApiKey();
     if (!apiKeyResult.success) {
       console.error("Error getting Gemini API key:", apiKeyResult.error);
       process.exit(1);
     }
 
-    const typeScriptRecipeSchema = argv.recipeSchema
-      ? await compileFromFile(path.resolve(argv.recipeSchema))
-      : await (async () => {
-          const schemaResult = await resolveDefaultRecipeSchema();
-          if (!schemaResult.success) {
-            console.error("Error resolving recipe schema:", schemaResult.error);
-            process.exit(1);
-          }
-          return schemaResult.result.schema;
-        })();
-
-    // Create recipe prompt
-    const prompt = createRecipePrompt({
-      description: result.result.metadata.description ?? "",
-      transcribedText: result.result.transcription,
-      language: argv.outputLanguage || "en",
-      schema: typeScriptRecipeSchema,
-    });
-
-    // Call Gemini API
     console.log("Generating recipe...");
     const geminiResult = await callGemini(
       apiKeyResult.result,
       "gemini-2.0-flash-001",
-      prompt
+      promptResult.result
     );
 
     if (!geminiResult.success) {
