@@ -146,7 +146,14 @@ export const videoCommand: CommandModule<
 
     const typeScriptRecipeSchema = argv.recipeSchema
       ? await compileFromFile(path.resolve(argv.recipeSchema))
-      : (await resolveDefaultRecipeSchema()).schema;
+      : await (async () => {
+          const schemaResult = await resolveDefaultRecipeSchema();
+          if (!schemaResult.success) {
+            console.error("Error resolving recipe schema:", schemaResult.error);
+            process.exit(1);
+          }
+          return schemaResult.result.schema;
+        })();
 
     // Create recipe prompt
     const prompt = createRecipePrompt({
