@@ -19,6 +19,7 @@ import { yargsWithRecipeSchema } from "../helpers/withRecipeSchema.js";
 import { resolveDefaultRecipeSchema } from "../../lib/recipeSchema.js";
 import { compileFromFile } from "json-schema-to-typescript";
 import path from "node:path";
+import { handleOutput, yargsWithOutput } from "../helpers/withOutput.js";
 
 type VideoRecipeOptions = {
   url: string;
@@ -29,6 +30,7 @@ type VideoRecipeOptions = {
   keyring?: Keyring;
   cookiesFile?: string;
   recipeSchema?: string;
+  output: string;
 };
 
 export const videoCommand: CommandModule<
@@ -111,7 +113,8 @@ export const videoCommand: CommandModule<
             "$0 recipe video https://youtube.com/watch?v=example -c firefox -p Work",
             "Use Firefox Work profile cookies"
           ),
-      yargsWithRecipeSchema
+      yargsWithRecipeSchema,
+      yargsWithOutput
     )(yargs);
   },
 
@@ -177,14 +180,20 @@ export const videoCommand: CommandModule<
     }
 
     console.log("✨ Recipe generated successfully!");
-    console.log("\n=== STRUCTURED RECIPE ===");
     try {
       const cleaned = stripMarkdownCodeFences(geminiResult.result.text);
       const recipe = JSON.parse(cleaned);
-      console.log(JSON.stringify(recipe, null, 2));
+      const outputResult = handleOutput(
+        argv.output,
+        JSON.stringify(recipe, null, 2)
+      );
+      if (!outputResult.success) {
+        throw new Error(outputResult.error);
+      }
     } catch (parseError) {
       console.log("Raw response (could not parse as JSON):", parseError);
       console.log(geminiResult.result.text);
+      process.exit(1);
     }
 
     console.log("\nComplete!");
