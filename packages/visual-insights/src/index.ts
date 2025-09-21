@@ -3,6 +3,7 @@ export * from "./download.js";
 export * from "./whisper/transcribe.js";
 export { extractMetadata } from "./ytdlp/metadata.js";
 export { getVideoData } from "./utils/videoData.js";
+export { getWebpageData } from "./html/getWebpageData.js";
 export {
   type WhisperLanguage,
   WHISPER_LANGUAGES,
@@ -14,3 +15,9 @@ export {
   SUPPORTED_BROWSERS,
   KEYRINGS,
 } from "./ytdlp/cmdArgs.js";
+export type {
+  WebpageOptions,
+  WebpageResult,
+  WebpageMetadata,
+  WebpageDataResult,
+} from "./html/webpageTypes.js";
