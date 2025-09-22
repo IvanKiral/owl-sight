@@ -1,9 +1,10 @@
 import { getWebpageData, WHISPER_LANGUAGES } from "visual-insights";
 import type { WhisperLanguage } from "visual-insights";
 import type { CommandModule } from "yargs";
-import { getGeminiApiKey } from "../../lib/geminiKey.js";
+import { getGeminiApiKey } from "../../lib/gemini/geminiKey.js";
 import { createWebRecipePrompt } from "../../lib/webRecipePrompt.js";
-import { callGemini } from "../../lib/gemini.js";
+import { callGemini } from "../../lib/gemini/gemini.js";
+import { stripMarkdownCodeFences } from "../../lib/gemini/responseUtils.js";
 import { compose } from "../helpers/commandOptionsComposer.js";
 import { yargsWithRecipeSchema } from "../helpers/withRecipeSchema.js";
 import { resolveDefaultRecipeSchema } from "../../lib/recipeSchema.js";
@@ -125,10 +126,4 @@ export const htmlCommand: CommandModule<
 
     console.log("\nComplete!");
   },
-};
-
-const stripMarkdownCodeFences = (text: string): string => {
-  const trimmed = text.trim();
-
-  return trimmed.replace("```json", "").replace("```", "");
 };
