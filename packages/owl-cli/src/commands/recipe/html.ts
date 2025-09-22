@@ -1,5 +1,5 @@
 import { getWebpageData, WHISPER_LANGUAGES } from "visual-insights";
-import type { WhisperLanguage } from "visual-insights";
+import { type WhisperLanguage, getLanguageName } from "visual-insights";
 import type { CommandModule } from "yargs";
 import { getGeminiApiKey } from "../../lib/gemini/geminiKey.js";
 import { createWebRecipePrompt } from "../../lib/webRecipePrompt.js";
@@ -91,7 +91,7 @@ export const htmlCommand: CommandModule<
     const prompt = createWebRecipePrompt({
       webpageContent: result.result.textContent,
       title: result.result.metadata.title,
-      language: argv.outputLanguage ?? "en",
+      language: getLanguageName(argv.outputLanguage ?? "en"),
       schema: typeScriptRecipeSchema,
     });
 

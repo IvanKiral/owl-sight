@@ -1,5 +1,5 @@
 import type { Argv } from "yargs";
-import type { WhisperLanguage } from "visual-insights";
+import type { WhisperLanguage, WhisperLanguageName } from "visual-insights";
 import { compileFromFile } from "json-schema-to-typescript";
 import path from "node:path";
 import { createRecipePrompt } from "../../lib/recipePrompt.js";
@@ -17,7 +17,7 @@ export const handleRecipePrompt = async (options: {
   recipeSchemaPath?: string;
   transcribedText: string;
   description: string;
-  outputLanguage: WhisperLanguage;
+  outputLanguage: WhisperLanguageName;
 }) => {
   try {
     const typeScriptRecipeSchema = options.recipeSchemaPath
@@ -25,7 +25,9 @@ export const handleRecipePrompt = async (options: {
       : await (async () => {
           const schemaResult = await resolveDefaultRecipeSchema();
           if (!schemaResult.success) {
-            throw new Error(`Error resolving recipe schema: ${schemaResult.error}`);
+            throw new Error(
+              `Error resolving recipe schema: ${schemaResult.error}`
+            );
           }
           return schemaResult.result.schema;
         })();

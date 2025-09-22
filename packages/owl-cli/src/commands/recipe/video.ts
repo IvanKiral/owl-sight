@@ -3,6 +3,7 @@ import {
   WHISPER_LANGUAGES,
   SUPPORTED_BROWSERS,
   KEYRINGS,
+  getLanguageName,
 } from "visual-insights";
 import type {
   WhisperLanguage,
@@ -144,7 +145,7 @@ export const videoCommand: CommandModule<
       recipeSchemaPath: argv.recipeSchema,
       transcribedText: result.result.transcription,
       description: result.result.metadata.description ?? "",
-      outputLanguage: argv.outputLanguage || "en",
+      outputLanguage: getLanguageName(argv.outputLanguage || "en"),
     });
 
     if (!promptResult.success) {
