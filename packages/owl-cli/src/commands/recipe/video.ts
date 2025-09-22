@@ -10,8 +10,9 @@ import type {
   Keyring,
 } from "visual-insights";
 import type { CommandModule } from "yargs";
-import { getGeminiApiKey } from "../../lib/geminiKey.js";
-import { callGemini } from "../../lib/gemini.js";
+import { getGeminiApiKey } from "../../lib/gemini/geminiKey.js";
+import { callGemini } from "../../lib/gemini/gemini.js";
+import { stripMarkdownCodeFences } from "../../lib/gemini/responseUtils.js";
 import { createCookieConfig } from "../../lib/cookieConfig.js";
 import { compose } from "../helpers/commandOptionsComposer.js";
 import {
@@ -188,10 +189,4 @@ export const videoCommand: CommandModule<
 
     console.log("\nComplete!");
   },
-};
-
-const stripMarkdownCodeFences = (text: string): string => {
-  const trimmed = text.trim();
-
-  return trimmed.replace("```json", "").replace("```", "");
 };
