@@ -6,7 +6,9 @@ export { getVideoData } from "./utils/videoData.js";
 export { getWebpageData } from "./html/getWebpageData.js";
 export {
   type WhisperLanguage,
+  type WhisperLanguageName,
   WHISPER_LANGUAGES,
+  getLanguageName,
 } from "./whisper/whisperTypes.js";
 export {
   type CookieConfig,

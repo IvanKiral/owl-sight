@@ -1,9 +1,9 @@
-import type { WhisperLanguage } from "visual-insights";
+import type { WhisperLanguageName } from "visual-insights";
 
 export const createWebRecipePrompt = (options: {
   webpageContent: string;
   title: string | null;
-  language: WhisperLanguage;
+  language: WhisperLanguageName;
   schema: string;
 }): string => {
   return `Analyze the following webpage content and extract recipe information into a structured JSON format.
