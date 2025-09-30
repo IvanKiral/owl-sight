@@ -2,21 +2,23 @@ import { getWebpageData, WHISPER_LANGUAGES } from "visual-insights";
 import { type WhisperLanguage, getLanguageName } from "visual-insights";
 import type { CommandModule } from "yargs";
 import { getGeminiApiKey } from "../../lib/gemini/geminiKey.js";
-import { createWebRecipePrompt } from "../../lib/webRecipePrompt.js";
 import { callGemini } from "../../lib/gemini/gemini.js";
 import { stripMarkdownCodeFences } from "../../lib/gemini/responseUtils.js";
 import { compose } from "../helpers/commandOptionsComposer.js";
-import { yargsWithRecipeSchema } from "../helpers/withRecipeSchema.js";
-import { resolveDefaultRecipeSchema } from "../../lib/recipeSchema.js";
-import { compileFromFile } from "json-schema-to-typescript";
+import {
+  handleRecipePrompt,
+  yargsWithRecipeSchema,
+} from "../helpers/withRecipeSchema.js";
 import { handleOutput, yargsWithOutput } from "../helpers/withOutput.js";
-import path from "node:path";
+import { yargsWithOutputFormat } from "../helpers/withOutputFormat.js";
+import { OutputFormat } from "../../lib/constants/output.js";
 
 type HtmlRecipeOptions = {
   url: string;
   outputLanguage?: WhisperLanguage;
   recipeSchema?: string;
   output: string;
+  outputFormat?: OutputFormat;
 };
 
 export const htmlCommand: CommandModule<
@@ -55,12 +57,15 @@ export const htmlCommand: CommandModule<
             "Extract recipe with custom schema"
           ),
       yargsWithRecipeSchema,
-      yargsWithOutput
+      yargsWithOutput,
+      yargsWithOutputFormat
     )(yargs);
   },
 
   handler: async (argv) => {
     console.log("🌐 Processing webpage:", argv.url);
+
+    const outputFormat = argv.outputFormat ?? "json";
 
     const result = await getWebpageData(argv.url);
 
@@ -77,29 +82,26 @@ export const htmlCommand: CommandModule<
       process.exit(1);
     }
 
-    const typeScriptRecipeSchema = argv.recipeSchema
-      ? await compileFromFile(path.resolve(argv.recipeSchema))
-      : await (async () => {
-          const schemaResult = await resolveDefaultRecipeSchema();
-          if (!schemaResult.success) {
-            console.error("Error resolving recipe schema:", schemaResult.error);
-            process.exit(1);
-          }
-          return schemaResult.result.schema;
-        })();
-
-    const prompt = createWebRecipePrompt({
-      webpageContent: result.result.textContent,
-      title: result.result.metadata.title,
-      language: getLanguageName(argv.outputLanguage ?? "en"),
-      schema: typeScriptRecipeSchema,
+    const promptResult = await handleRecipePrompt({
+      recipeSchemaPath: argv.recipeSchema,
+      data: {
+        webpageContent: result.result.textContent,
+        articleTitle: result.result.metadata.title,
+      },
+      outputLanguage: getLanguageName(argv.outputLanguage || "en"),
+      format: argv.outputFormat ?? "json",
     });
+
+    if (!promptResult.success) {
+      console.error("Error creating recipe prompt:", promptResult.error);
+      process.exit(1);
+    }
 
     console.log("Generating recipe...");
     const geminiResult = await callGemini(
       apiKeyResult.result,
       "gemini-2.0-flash-001",
-      prompt
+      promptResult.result
     );
 
     if (!geminiResult.success) {
@@ -109,12 +111,11 @@ export const htmlCommand: CommandModule<
 
     console.log("✨ Recipe generated successfully!");
     try {
-      const cleaned = stripMarkdownCodeFences(geminiResult.result.text);
-      const recipe = JSON.parse(cleaned);
-      const outputResult = handleOutput(
-        argv.output,
-        JSON.stringify(recipe, null, 2)
+      const cleaned = stripMarkdownCodeFences(
+        geminiResult.result.text,
+        outputFormat
       );
+      const outputResult = handleOutput(argv.output, cleaned);
       if (!outputResult.success) {
         throw new Error(outputResult.error);
       }
