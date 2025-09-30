@@ -14,19 +14,19 @@ export const DEFAULT_RECIPE_SCHEMA = {
       description: "Brief description",
     },
     prep_time: {
-      type: "string",
-      description: "Preparation time (e.g., '15 minutes')",
+      type: "number",
+      description: "Preparation time in minutes",
     },
     cook_time: {
-      type: "string",
-      description: "Cooking time (e.g., '30 minutes')",
+      type: "number",
+      description: "Cooking time in minutes",
     },
     total_time: {
-      type: "string",
-      description: "Total time (e.g., '45 minutes')",
+      type: "number",
+      description: "Total time in minutes",
     },
     servings: {
-      type: ["string", "number"],
+      type: "number",
       description: "Number of servings",
     },
     ingredients: {
@@ -53,6 +53,17 @@ export const DEFAULT_RECIPE_SCHEMA = {
       description: "Custom tags for classification",
       items: {
         type: "string",
+        enum: [
+          "Chicken",
+          "Pork",
+          "Beef",
+          "Fish",
+          "Vegan",
+          "Dessert",
+          "Lactose-free",
+          "Low-Sugar",
+          "Cake",
+        ],
       },
       uniqueItems: true,
     },
