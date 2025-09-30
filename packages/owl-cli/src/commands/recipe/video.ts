@@ -21,6 +21,8 @@ import {
   handleRecipePrompt,
 } from "../helpers/withRecipeSchema.js";
 import { handleOutput, yargsWithOutput } from "../helpers/withOutput.js";
+import { yargsWithOutputFormat } from "../helpers/withOutputFormat.js";
+import { OutputFormat } from "../../lib/constants/output.js";
 
 type VideoRecipeOptions = {
   url: string;
@@ -32,6 +34,7 @@ type VideoRecipeOptions = {
   cookiesFile?: string;
   recipeSchema?: string;
   output: string;
+  outputFormat?: OutputFormat;
 };
 
 export const videoCommand: CommandModule<
@@ -115,7 +118,8 @@ export const videoCommand: CommandModule<
             "Use Firefox Work profile cookies"
           ),
       yargsWithRecipeSchema,
-      yargsWithOutput
+      yargsWithOutput,
+      yargsWithOutputFormat
     )(yargs);
   },
 
@@ -143,9 +147,12 @@ export const videoCommand: CommandModule<
 
     const promptResult = await handleRecipePrompt({
       recipeSchemaPath: argv.recipeSchema,
-      transcribedText: result.result.transcription,
-      description: result.result.metadata.description ?? "",
+      data: {
+        transcribedText: result.result.transcription,
+        description: result.result.metadata.description ?? "",
+      },
       outputLanguage: getLanguageName(argv.outputLanguage || "en"),
+      format: argv.outputFormat ?? "json",
     });
 
     if (!promptResult.success) {
@@ -173,12 +180,11 @@ export const videoCommand: CommandModule<
 
     console.log("✨ Recipe generated successfully!");
     try {
-      const cleaned = stripMarkdownCodeFences(geminiResult.result.text);
-      const recipe = JSON.parse(cleaned);
-      const outputResult = handleOutput(
-        argv.output,
-        JSON.stringify(recipe, null, 2)
+      const cleaned = stripMarkdownCodeFences(
+        geminiResult.result.text,
+        argv.outputFormat ?? "json"
       );
+      const outputResult = handleOutput(argv.output, cleaned);
       if (!outputResult.success) {
         throw new Error(outputResult.error);
       }
