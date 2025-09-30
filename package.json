@@ -8,7 +8,7 @@
     "biome:check:fix": "biome check . --write",
     "bootstrap": "pnpm install",
     "test": "turbo run test",
-    "link:cli": "cd packages/owl-cli && pnpm link --global",
+    "link:cli": "pnpm build && cd packages/owl-cli && pnpm link --global",
     "unlink:cli": "cd packages/owl-cli && pnpm unlink --global"
   },
   "devDependencies": {
