@@ -5,13 +5,11 @@ import { getGeminiApiKey } from "../../lib/gemini/geminiKey.js";
 import { callGemini } from "../../lib/gemini/gemini.js";
 import { stripMarkdownCodeFences } from "../../lib/gemini/responseUtils.js";
 import { compose } from "../helpers/commandOptionsComposer.js";
-import {
-  handleRecipePrompt,
-  yargsWithRecipeSchema,
-} from "../helpers/withRecipeSchema.js";
+import { handleRecipePrompt, yargsWithRecipeSchema } from "../helpers/withRecipeSchema.js";
 import { handleOutput, yargsWithOutput } from "../helpers/withOutput.js";
 import { yargsWithOutputFormat } from "../helpers/withOutputFormat.js";
-import { OutputFormat } from "../../lib/constants/output.js";
+import type { OutputFormat } from "../../lib/constants/output.js";
+import { yargsWithModel, mapToApiModel, type UserFacingModel } from "../helpers/withLlmModelSchema.js";
 
 type HtmlRecipeOptions = {
   url: string;
@@ -19,12 +17,10 @@ type HtmlRecipeOptions = {
   recipeSchema?: string;
   output: string;
   outputFormat?: OutputFormat;
+  llmModel?: UserFacingModel;
 };
 
-export const htmlCommand: CommandModule<
-  Record<string, unknown>,
-  HtmlRecipeOptions
-> = {
+export const htmlCommand: CommandModule<Record<string, unknown>, HtmlRecipeOptions> = {
   command: "html <url>",
   describe: "Extract a recipe from a webpage URL",
 
@@ -44,21 +40,19 @@ export const htmlCommand: CommandModule<
             alias: "output-lang",
             default: "en",
           } as const)
-          .example(
-            "$0 recipe html https://example.com/recipe",
-            "Extract recipe from webpage"
-          )
+          .example("$0 recipe html https://example.com/recipe", "Extract recipe from webpage")
           .example(
             "$0 recipe html https://example.com/recipe --output-language es",
-            "Extract recipe and output in Spanish"
+            "Extract recipe and output in Spanish",
           )
           .example(
             "$0 recipe html https://example.com/recipe --recipe-schema ./custom.json",
-            "Extract recipe with custom schema"
+            "Extract recipe with custom schema",
           ),
       yargsWithRecipeSchema,
       yargsWithOutput,
-      yargsWithOutputFormat
+      yargsWithOutputFormat,
+      yargsWithModel,
     )(yargs);
   },
 
@@ -100,8 +94,8 @@ export const htmlCommand: CommandModule<
     console.log("Generating recipe...");
     const geminiResult = await callGemini(
       apiKeyResult.result,
-      "gemini-2.0-flash-001",
-      promptResult.result
+      mapToApiModel(argv.llmModel ?? "gemini-flash-lite"),
+      promptResult.result,
     );
 
     if (!geminiResult.success) {
@@ -111,10 +105,7 @@ export const htmlCommand: CommandModule<
 
     console.log("✨ Recipe generated successfully!");
     try {
-      const cleaned = stripMarkdownCodeFences(
-        geminiResult.result.text,
-        outputFormat
-      );
+      const cleaned = stripMarkdownCodeFences(geminiResult.result.text, outputFormat);
       const outputResult = handleOutput(argv.output, cleaned);
       if (!outputResult.success) {
         throw new Error(outputResult.error);

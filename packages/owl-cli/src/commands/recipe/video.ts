@@ -5,24 +5,18 @@ import {
   KEYRINGS,
   getLanguageName,
 } from "visual-insights";
-import type {
-  WhisperLanguage,
-  SupportedBrowser,
-  Keyring,
-} from "visual-insights";
+import type { WhisperLanguage, SupportedBrowser, Keyring } from "visual-insights";
 import type { CommandModule } from "yargs";
 import { getGeminiApiKey } from "../../lib/gemini/geminiKey.js";
 import { callGemini } from "../../lib/gemini/gemini.js";
 import { stripMarkdownCodeFences } from "../../lib/gemini/responseUtils.js";
 import { createCookieConfig } from "../../lib/cookieConfig.js";
 import { compose } from "../helpers/commandOptionsComposer.js";
-import {
-  yargsWithRecipeSchema,
-  handleRecipePrompt,
-} from "../helpers/withRecipeSchema.js";
+import { yargsWithRecipeSchema, handleRecipePrompt } from "../helpers/withRecipeSchema.js";
 import { handleOutput, yargsWithOutput } from "../helpers/withOutput.js";
 import { yargsWithOutputFormat } from "../helpers/withOutputFormat.js";
-import { OutputFormat } from "../../lib/constants/output.js";
+import type { OutputFormat } from "../../lib/constants/output.js";
+import { yargsWithModel, mapToApiModel, type UserFacingModel } from "../helpers/withLlmModelSchema.js";
 
 type VideoRecipeOptions = {
   url: string;
@@ -35,12 +29,10 @@ type VideoRecipeOptions = {
   recipeSchema?: string;
   output: string;
   outputFormat?: OutputFormat;
+  llmModel?: UserFacingModel;
 };
 
-export const videoCommand: CommandModule<
-  Record<string, unknown>,
-  VideoRecipeOptions
-> = {
+export const videoCommand: CommandModule<Record<string, unknown>, VideoRecipeOptions> = {
   command: "video <url>",
   describe: "Summarize a recipe from a video URL",
 
@@ -54,8 +46,7 @@ export const videoCommand: CommandModule<
             demandOption: true,
           })
           .option("video-language", {
-            describe:
-              "Language of the video audio to improve transcription accuracy",
+            describe: "Language of the video audio to improve transcription accuracy",
             type: "string",
             choices: WHISPER_LANGUAGES,
             alias: "video-lang",
@@ -68,8 +59,7 @@ export const videoCommand: CommandModule<
             default: "en",
           } as const)
           .option("cookies-from-browser", {
-            describe:
-              "Browser to extract cookies from (for age-restricted or private videos)",
+            describe: "Browser to extract cookies from (for age-restricted or private videos)",
             type: "string",
             choices: SUPPORTED_BROWSERS,
             alias: "c",
@@ -95,31 +85,32 @@ export const videoCommand: CommandModule<
           })
           .example(
             "$0 recipe video https://youtube.com/watch?v=example",
-            "Summarize recipe from YouTube video"
+            "Summarize recipe from YouTube video",
           )
           .example(
             "$0 recipe video https://youtube.com/watch?v=example --video-language es",
-            "Transcribe Spanish video, output in English"
+            "Transcribe Spanish video, output in English",
           )
           .example(
             "$0 recipe video https://youtube.com/watch?v=example --output-language es",
-            "Transcribe English video, output in Spanish"
+            "Transcribe English video, output in Spanish",
           )
           .example(
             "$0 recipe video https://youtube.com/watch?v=example --video-lang es --output-lang fr",
-            "Transcribe Spanish video, output in French"
+            "Transcribe Spanish video, output in French",
           )
           .example(
             "$0 recipe video https://youtube.com/watch?v=example -c chrome",
-            "Use Chrome cookies for age-restricted videos"
+            "Use Chrome cookies for age-restricted videos",
           )
           .example(
             "$0 recipe video https://youtube.com/watch?v=example -c firefox -p Work",
-            "Use Firefox Work profile cookies"
+            "Use Firefox Work profile cookies",
           ),
       yargsWithRecipeSchema,
       yargsWithOutput,
-      yargsWithOutputFormat
+      yargsWithOutputFormat,
+      yargsWithModel,
     )(yargs);
   },
 
@@ -169,8 +160,8 @@ export const videoCommand: CommandModule<
     console.log("Generating recipe...");
     const geminiResult = await callGemini(
       apiKeyResult.result,
-      "gemini-2.0-flash-001",
-      promptResult.result
+      mapToApiModel(argv.llmModel ?? "gemini-flash-lite"),
+      promptResult.result,
     );
 
     if (!geminiResult.success) {
@@ -182,7 +173,7 @@ export const videoCommand: CommandModule<
     try {
       const cleaned = stripMarkdownCodeFences(
         geminiResult.result.text,
-        argv.outputFormat ?? "json"
+        argv.outputFormat ?? "json",
       );
       const outputResult = handleOutput(argv.output, cleaned);
       if (!outputResult.success) {
