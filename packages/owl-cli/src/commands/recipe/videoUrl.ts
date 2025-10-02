@@ -16,7 +16,11 @@ import { yargsWithRecipeSchema, handleRecipePrompt } from "../helpers/withRecipe
 import { handleOutput, yargsWithOutput } from "../helpers/withOutput.js";
 import { yargsWithOutputFormat } from "../helpers/withOutputFormat.js";
 import type { OutputFormat } from "../../lib/constants/output.js";
-import { yargsWithModel, mapToApiModel, type UserFacingModel } from "../helpers/withLlmModelSchema.js";
+import {
+  yargsWithModel,
+  mapToApiModel,
+  type UserFacingModel,
+} from "../helpers/withLlmModelSchema.js";
 
 type VideoRecipeOptions = {
   url: string;
@@ -33,7 +37,7 @@ type VideoRecipeOptions = {
 };
 
 export const videoCommand: CommandModule<Record<string, unknown>, VideoRecipeOptions> = {
-  command: "video <url>",
+  command: "video-url <url>",
   describe: "Summarize a recipe from a video URL",
 
   builder: (yargs) => {
