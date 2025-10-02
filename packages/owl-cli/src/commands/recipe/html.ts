@@ -3,13 +3,17 @@ import { type WhisperLanguage, getLanguageName } from "visual-insights";
 import type { CommandModule } from "yargs";
 import { getGeminiApiKey } from "../../lib/gemini/geminiKey.js";
 import { callGemini } from "../../lib/gemini/gemini.js";
-import { stripMarkdownCodeFences } from "../../lib/gemini/responseUtils.js";
+import { deserializeGeminiResponse, addUrlToResponse } from "../../lib/gemini/responseUtils.js";
 import { compose } from "../helpers/commandOptionsComposer.js";
 import { handleRecipePrompt, yargsWithRecipeSchema } from "../helpers/withRecipeSchema.js";
 import { handleOutput, yargsWithOutput } from "../helpers/withOutput.js";
 import { yargsWithOutputFormat } from "../helpers/withOutputFormat.js";
 import type { OutputFormat } from "../../lib/constants/output.js";
-import { yargsWithModel, mapToApiModel, type UserFacingModel } from "../helpers/withLlmModelSchema.js";
+import {
+  yargsWithModel,
+  mapToApiModel,
+  type UserFacingModel,
+} from "../helpers/withLlmModelSchema.js";
 
 type HtmlRecipeOptions = {
   url: string;
@@ -83,7 +87,7 @@ export const htmlCommand: CommandModule<Record<string, unknown>, HtmlRecipeOptio
         articleTitle: result.result.metadata.title,
       },
       outputLanguage: getLanguageName(argv.outputLanguage || "en"),
-      format: argv.outputFormat ?? "json",
+      format: outputFormat,
     });
 
     if (!promptResult.success) {
@@ -105,8 +109,17 @@ export const htmlCommand: CommandModule<Record<string, unknown>, HtmlRecipeOptio
 
     console.log("✨ Recipe generated successfully!");
     try {
-      const cleaned = stripMarkdownCodeFences(geminiResult.result.text, outputFormat);
-      const outputResult = handleOutput(argv.output, cleaned);
+      const deserializedResult = deserializeGeminiResponse(geminiResult.result.text, outputFormat);
+      if (!deserializedResult.success) {
+        throw new Error(deserializedResult.error);
+      }
+
+      const resultWithUrl = addUrlToResponse(deserializedResult.result, argv.url);
+      const outputString = resultWithUrl.format === "json"
+        ? JSON.stringify(resultWithUrl.parsed, null, 2)
+        : resultWithUrl.parsed;
+
+      const outputResult = handleOutput(argv.output, outputString);
       if (!outputResult.success) {
         throw new Error(outputResult.error);
       }
