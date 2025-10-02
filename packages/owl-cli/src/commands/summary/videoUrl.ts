@@ -18,6 +18,7 @@ import {
   mapToApiModel,
   type UserFacingModel,
 } from "../helpers/withLlmModelSchema.js";
+import { yargsWithCustomPrompt } from "../helpers/withCustomPrompt.js";
 import { createSummaryPrompt } from "../../lib/prompts/summaryPrompt.js";
 
 type VideoSummaryOptions = {
@@ -30,6 +31,7 @@ type VideoSummaryOptions = {
   cookiesFile?: string;
   output: string;
   llmModel?: UserFacingModel;
+  customPrompt?: string;
 };
 
 export const videoCommand: CommandModule<Record<string, unknown>, VideoSummaryOptions> = {
@@ -109,6 +111,7 @@ export const videoCommand: CommandModule<Record<string, unknown>, VideoSummaryOp
           ),
       yargsWithOutput,
       yargsWithModel,
+      yargsWithCustomPrompt,
     )(yargs);
   },
 
@@ -140,6 +143,7 @@ export const videoCommand: CommandModule<Record<string, unknown>, VideoSummaryOp
         description: result.result.metadata.description ?? "",
       },
       language: getLanguageName(argv.outputLanguage || "en"),
+      customPrompt: argv.customPrompt,
     });
 
     const apiKeyResult = await getGeminiApiKey();
