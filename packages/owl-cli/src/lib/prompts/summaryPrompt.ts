@@ -13,11 +13,19 @@ export type SummaryPromptData =
 export const createSummaryPrompt = (options: {
   data: SummaryPromptData;
   language: WhisperLanguageName;
+  customPrompt?: string;
 }): string => {
-  return `Analyze the following content and create a comprehensive notes in markdown format.
+  const dataSection = `Data:
+${JSON.stringify(options.data, null, 2)}`;
 
-Data:
-${JSON.stringify(options.data, null, 2)}
+  return options.customPrompt
+    ? `${options.customPrompt}
+
+    Please translate the entire text to ${options.language} language.
+${dataSection}`
+    : `Analyze the following content and create a comprehensive notes in markdown format.
+
+${dataSection}
 
 Please create a well-structured notes following this markdown format:
 

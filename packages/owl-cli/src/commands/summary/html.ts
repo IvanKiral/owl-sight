@@ -11,6 +11,7 @@ import {
   mapToApiModel,
   type UserFacingModel,
 } from "../helpers/withLlmModelSchema.js";
+import { yargsWithCustomPrompt } from "../helpers/withCustomPrompt.js";
 import { createSummaryPrompt } from "../../lib/prompts/summaryPrompt.js";
 
 type HtmlSummaryOptions = {
@@ -18,6 +19,7 @@ type HtmlSummaryOptions = {
   outputLanguage?: WhisperLanguage;
   output: string;
   llmModel?: UserFacingModel;
+  customPrompt?: string;
 };
 
 export const htmlCommand: CommandModule<Record<string, unknown>, HtmlSummaryOptions> = {
@@ -47,6 +49,7 @@ export const htmlCommand: CommandModule<Record<string, unknown>, HtmlSummaryOpti
           ),
       yargsWithOutput,
       yargsWithModel,
+      yargsWithCustomPrompt,
     )(yargs);
   },
 
@@ -74,6 +77,7 @@ export const htmlCommand: CommandModule<Record<string, unknown>, HtmlSummaryOpti
         articleTitle: result.result.metadata.title,
       },
       language: getLanguageName(argv.outputLanguage || "en"),
+      customPrompt: argv.customPrompt,
     });
 
     console.log("Generating summary...");
