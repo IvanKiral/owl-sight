@@ -1,19 +1,6 @@
-export type WhisperModel =
-  | "tiny"
-  | "base"
-  | "small"
-  | "medium"
-  | "large"
-  | "turbo"
-  | "large-v3";
+export type WhisperModel = "tiny" | "base" | "small" | "medium" | "large" | "turbo" | "large-v3";
 
-export type WhisperOutputFormat =
-  | "txt"
-  | "vtt"
-  | "srt"
-  | "tsv"
-  | "json"
-  | "all";
+export type WhisperOutputFormat = "txt" | "vtt" | "srt" | "tsv" | "json" | "all";
 
 export type WhisperTask = "transcribe" | "translate";
 
@@ -227,8 +214,7 @@ export const WHISPER_LANGUAGE_MAP = {
   zh: "Chinese",
 } as const satisfies Record<WhisperLanguage, string>;
 
-export type WhisperLanguageName =
-  (typeof WHISPER_LANGUAGE_MAP)[WhisperLanguage];
+export type WhisperLanguageName = (typeof WHISPER_LANGUAGE_MAP)[WhisperLanguage];
 
 export const getLanguageName = (code: WhisperLanguage): WhisperLanguageName =>
   WHISPER_LANGUAGE_MAP[code];

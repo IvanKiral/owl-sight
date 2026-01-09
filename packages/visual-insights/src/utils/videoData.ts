@@ -1,8 +1,8 @@
-import { type WithError, success } from "shared";
-import { type YtDlpVideoOptions, downloadDataFromVideo } from "../download.js";
+import { success, type WithError } from "shared";
+import { downloadDataFromVideo, type YtDlpVideoOptions } from "../download.js";
 import { transcribe } from "../whisper/transcribe.js";
 import type { WhisperOptions } from "../whisper/whisperTypes.js";
-import { type VideoMetadata, extractMetadata } from "../ytdlp/metadata.js";
+import { extractMetadata, type VideoMetadata } from "../ytdlp/metadata.js";
 import type {
   YtDlpInstagramMetadataKeys,
   YtDlpInstagramReelMetadata,

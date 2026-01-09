@@ -1,12 +1,9 @@
 import { Readability } from "@mozilla/readability";
 import { JSDOM } from "jsdom";
-import { error, success, WithError } from "shared";
+import { error, success, type WithError } from "shared";
 import type { WebpageMetadata, WebpageResult } from "./webpageTypes.js";
 
-export const extractArticle = (
-  html: string,
-  url: string
-): WithError<WebpageResult, string> => {
+export const extractArticle = (html: string, url: string): WithError<WebpageResult, string> => {
   try {
     const dom = new JSDOM(html, { url });
     const reader = new Readability(dom.window.document);

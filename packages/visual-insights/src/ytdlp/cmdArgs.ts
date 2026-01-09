@@ -1,160 +1,140 @@
-import type {
-	AudioFormat,
-	AudioQuality,
-	FormatSelection,
-} from "./ytdlpAudioTypes.js";
-import type {
-	MergeOutputFormat,
-	VideoQualityOptions,
-} from "./ytdlpVideoTypes.js";
+import type { AudioFormat, AudioQuality, FormatSelection } from "./ytdlpAudioTypes.js";
+import type { MergeOutputFormat, VideoQualityOptions } from "./ytdlpVideoTypes.js";
 
 // Supported browsers for cookie extraction
 export const SUPPORTED_BROWSERS = [
-	"brave",
-	"chrome",
-	"chromium",
-	"edge",
-	"firefox",
-	"opera",
-	"safari",
-	"vivaldi",
-	"whale",
+  "brave",
+  "chrome",
+  "chromium",
+  "edge",
+  "firefox",
+  "opera",
+  "safari",
+  "vivaldi",
+  "whale",
 ] as const;
 
 export type SupportedBrowser = (typeof SUPPORTED_BROWSERS)[number];
 
 // Keyring options for Linux Chromium decryption
-export const KEYRINGS = [
-	"basictext",
-	"gnomekeyring",
-	"kwallet",
-	"kwallet5",
-	"kwallet6",
-] as const;
+export const KEYRINGS = ["basictext", "gnomekeyring", "kwallet", "kwallet5", "kwallet6"] as const;
 
 export type Keyring = (typeof KEYRINGS)[number];
 
 export type CookieConfig =
-	| {
-			type: "browser";
-			browser: SupportedBrowser;
-			profile?: string;
-			keyring?: Keyring;
-	  }
-	| { type: "file"; path: string }
-	| undefined;
+  | {
+      type: "browser";
+      browser: SupportedBrowser;
+      profile?: string;
+      keyring?: Keyring;
+    }
+  | { type: "file"; path: string }
+  | undefined;
 
 // Common options that can be shared between audio and video extraction
 export type CommonExtractionArgs = {
-	outputPath: string;
-	writeInfoJson?: boolean;
-	verbose?: boolean;
-	quiet?: boolean;
-	cookies?: CookieConfig;
+  outputPath: string;
+  writeInfoJson?: boolean;
+  verbose?: boolean;
+  quiet?: boolean;
+  cookies?: CookieConfig;
 };
 
 export type AudioExtractionArgs = CommonExtractionArgs & {
-	audioFormat?: AudioFormat;
-	audioQuality?: AudioQuality;
-	format?: FormatSelection;
+  audioFormat?: AudioFormat;
+  audioQuality?: AudioQuality;
+  format?: FormatSelection;
 };
 
 export type VideoExtractionArgs = CommonExtractionArgs & {
-	quality?: VideoQualityOptions;
-	format?: string;
-	mergeOutputFormat?: MergeOutputFormat;
+  quality?: VideoQualityOptions;
+  format?: string;
+  mergeOutputFormat?: MergeOutputFormat;
 };
 
 const createCookieArgs = (cookies?: CookieConfig): ReadonlyArray<string> => {
-	if (!cookies) {
-		return [];
-	}
+  if (!cookies) {
+    return [];
+  }
 
-	if (cookies.type === "file") {
-		return ["--cookies", cookies.path];
-	}
+  if (cookies.type === "file") {
+    return ["--cookies", cookies.path];
+  }
 
-	const { browser, keyring, profile } = cookies;
-	const browserSpec = `${browser}${keyring ? `+${keyring}` : ""}${profile ? `:${profile}` : ""}`;
+  const { browser, keyring, profile } = cookies;
+  const browserSpec = `${browser}${keyring ? `+${keyring}` : ""}${profile ? `:${profile}` : ""}`;
 
-	return ["--cookies-from-browser", browserSpec];
+  return ["--cookies-from-browser", browserSpec];
 };
 
 export const createYtDlpExtractAudioArgs = (
-	options: AudioExtractionArgs,
+  options: AudioExtractionArgs,
 ): ReadonlyArray<string> => {
-	return [
-		// Always extract audio
-		"--extract-audio",
-		...(options.format ? ["-f", options.format] : []),
-		...(options.audioFormat ? ["--audio-format", options.audioFormat] : []),
-		...(options.audioQuality !== undefined
-			? ["--audio-quality", options.audioQuality.toString()]
-			: []),
+  return [
+    // Always extract audio
+    "--extract-audio",
+    ...(options.format ? ["-f", options.format] : []),
+    ...(options.audioFormat ? ["--audio-format", options.audioFormat] : []),
+    ...(options.audioQuality !== undefined
+      ? ["--audio-quality", options.audioQuality.toString()]
+      : []),
 
-		"--restrict-filenames",
-		"--no-playlist",
+    "--restrict-filenames",
+    "--no-playlist",
 
-		...(options.verbose !== undefined
-			? ["--verbose", options.verbose ? "True" : "False"]
-			: []),
-		...(options.quiet ? ["--quiet"] : []),
+    ...(options.verbose !== undefined ? ["--verbose", options.verbose ? "True" : "False"] : []),
+    ...(options.quiet ? ["--quiet"] : []),
 
-		...(options.writeInfoJson ? ["--write-info-json"] : []),
+    ...(options.writeInfoJson ? ["--write-info-json"] : []),
 
-		...createCookieArgs(options.cookies),
+    ...createCookieArgs(options.cookies),
 
-		"-o",
-		options.outputPath,
-	];
+    "-o",
+    options.outputPath,
+  ];
 };
 
-export const buildVideoFormatString = (
-	quality: VideoQualityOptions,
-): string => {
-	const height = quality.maxHeight ?? 1080;
-	const fps = quality.maxFps ?? 30;
-	const vcodec = quality.preferredVideoCodec ?? "av01";
-	const acodec = quality.preferredAudioCodec ?? "opus";
+export const buildVideoFormatString = (quality: VideoQualityOptions): string => {
+  const height = quality.maxHeight ?? 1080;
+  const fps = quality.maxFps ?? 30;
+  const vcodec = quality.preferredVideoCodec ?? "av01";
+  const acodec = quality.preferredAudioCodec ?? "opus";
 
-	const fallbackCodec = vcodec === "av01" ? "vp9" : "av01";
+  const fallbackCodec = vcodec === "av01" ? "vp9" : "av01";
 
-	// Format selection with fallback priority (left to right):
-	// 1. Preferred codec video-only stream
-	// 2. Fallback codec video + preferred audio codec
-	// 3. Any best available format
-	return [
-		`bv*[height<=${height}][fps<=${fps}][vcodec^=${vcodec}]`,
-		`bv*[height<=${height}][fps<=${fps}][vcodec^=${fallbackCodec}]+ba[acodec^=${acodec}]`,
-		"best",
-	].join("/");
+  // Format selection with fallback priority (left to right):
+  // 1. Preferred codec video-only stream
+  // 2. Fallback codec video + preferred audio codec
+  // 3. Any best available format
+  return [
+    `bv*[height<=${height}][fps<=${fps}][vcodec^=${vcodec}]`,
+    `bv*[height<=${height}][fps<=${fps}][vcodec^=${fallbackCodec}]+ba[acodec^=${acodec}]`,
+    "best",
+  ].join("/");
 };
 
 export const createYtDlpExtractVideoArgs = (
-	options: VideoExtractionArgs,
+  options: VideoExtractionArgs,
 ): ReadonlyArray<string> => {
-	const formatString =
-		options.format ?? buildVideoFormatString(options.quality ?? {});
+  const formatString = options.format ?? buildVideoFormatString(options.quality ?? {});
 
-	return [
-		"-f",
-		formatString,
-		"--merge-output-format",
-		options.mergeOutputFormat ?? "mkv",
+  return [
+    "-f",
+    formatString,
+    "--merge-output-format",
+    options.mergeOutputFormat ?? "mkv",
 
-		"--restrict-filenames",
-		"--no-playlist",
+    "--restrict-filenames",
+    "--no-playlist",
 
-		...(options.verbose !== undefined
-			? ["--verbose", options.verbose ? "True" : "False"]
-			: []),
-		...(options.quiet ? ["--quiet"] : []),
+    ...(options.verbose !== undefined ? ["--verbose", options.verbose ? "True" : "False"] : []),
+    ...(options.quiet ? ["--quiet"] : []),
 
-		...(options.writeInfoJson ? ["--write-info-json"] : []),
+    ...(options.writeInfoJson ? ["--write-info-json"] : []),
 
-		...createCookieArgs(options.cookies),
+    ...createCookieArgs(options.cookies),
 
-		"-o",
-		options.outputPath,
-	];
+    "-o",
+    options.outputPath,
+  ];
 };

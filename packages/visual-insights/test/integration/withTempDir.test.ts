@@ -1,9 +1,7 @@
-import { describe, it, expect } from "vitest";
-import { withTempDir } from "../../src/utils/tempFolder.js";
+import { access, readFile, writeFile } from "node:fs/promises";
 import * as path from "node:path";
-import { writeFile, access } from "fs/promises";
-import { readFile } from "node:fs/promises";
-import { a } from "vitest/dist/chunks/suite.B2jumIFP.js";
+import { describe, expect, it } from "vitest";
+import { withTempDir } from "../../src/utils/tempFolder.js";
 
 describe("withTempDir Integration Tests", () => {
   it("should create temporary directory and clean up after successful execution", async () => {
@@ -28,6 +26,7 @@ describe("withTempDir Integration Tests", () => {
     expect(tempDirPath).toBeDefined();
 
     // Verify directory is cleaned up after execution
+    // biome-ignore lint/style/noNonNullAssertion: tempDirPath is set in callback
     await expect(access(tempDirPath!)).rejects.toThrow();
   });
 
@@ -35,10 +34,10 @@ describe("withTempDir Integration Tests", () => {
     let tempDirPath: string | undefined;
 
     await withTempDir(
-      async (dirPath) => {
+      (dirPath) => {
         tempDirPath = dirPath;
         expect(dirPath).toContain("custom-test-prefix");
-        return "done";
+        return Promise.resolve("done");
       },
       { prefix: "custom-test-prefix" },
     );
@@ -63,6 +62,7 @@ describe("withTempDir Integration Tests", () => {
 
     expect(tempDirPath).toBeDefined();
 
+    // biome-ignore lint/style/noNonNullAssertion: tempDirPath is set in callback
     await expect(access(tempDirPath!)).rejects.toThrow();
   });
 });

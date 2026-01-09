@@ -1,8 +1,6 @@
-import { WhisperOptions } from "./whisperTypes.js";
+import type { WhisperOptions } from "./whisperTypes.js";
 
-export const createWhisperArgs = (
-  options: WhisperOptions,
-): ReadonlyArray<string> => {
+export const createWhisperArgs = (options: WhisperOptions): ReadonlyArray<string> => {
   return [
     options.audioPath,
     ...(options.model ? ["--model", options.model] : []),
@@ -14,27 +12,14 @@ export const createWhisperArgs = (
     ...(options.wordTimestamps !== undefined
       ? ["--word_timestamps", options.wordTimestamps.toString()]
       : []),
-    ...(options.temperature !== undefined
-      ? ["--temperature", options.temperature.toString()]
-      : []),
-    ...(options.beamSize !== undefined
-      ? ["--beam_size", options.beamSize.toString()]
-      : []),
-    ...(options.bestOf !== undefined
-      ? ["--best_of", options.bestOf.toString()]
-      : []),
-    ...(options.threads !== undefined
-      ? ["--threads", options.threads.toString()]
-      : []),
+    ...(options.temperature !== undefined ? ["--temperature", options.temperature.toString()] : []),
+    ...(options.beamSize !== undefined ? ["--beam_size", options.beamSize.toString()] : []),
+    ...(options.bestOf !== undefined ? ["--best_of", options.bestOf.toString()] : []),
+    ...(options.threads !== undefined ? ["--threads", options.threads.toString()] : []),
     ...(options.fp16 !== undefined ? ["--fp16", options.fp16.toString()] : []),
-    ...(options.verbose !== undefined
-      ? ["--verbose", options.verbose.toString()]
-      : []),
+    ...(options.verbose !== undefined ? ["--verbose", options.verbose.toString()] : []),
     ...(options.compressionRatioThreshold !== undefined
-      ? [
-          "--compression_ratio_threshold",
-          options.compressionRatioThreshold.toString(),
-        ]
+      ? ["--compression_ratio_threshold", options.compressionRatioThreshold.toString()]
       : []),
     ...(options.logprobThreshold !== undefined
       ? ["--logprob_threshold", options.logprobThreshold.toString()]
@@ -42,14 +27,9 @@ export const createWhisperArgs = (
     ...(options.noSpeechThreshold !== undefined
       ? ["--no_speech_threshold", options.noSpeechThreshold.toString()]
       : []),
-    ...(options.initialPrompt
-      ? ["--initial_prompt", options.initialPrompt]
-      : []),
+    ...(options.initialPrompt ? ["--initial_prompt", options.initialPrompt] : []),
     ...(options.conditionOnPreviousText !== undefined
-      ? [
-          "--condition_on_previous_text",
-          options.conditionOnPreviousText.toString(),
-        ]
+      ? ["--condition_on_previous_text", options.conditionOnPreviousText.toString()]
       : []),
   ];
 };

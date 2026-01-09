@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { extractMetadata } from "../../src/ytdlp/metadata.js";
 import * as path from "node:path";
+import { describe, expect, it } from "vitest";
+import { extractMetadata } from "../../src/ytdlp/metadata.js";
 
 const fixturesPath = path.join(__dirname, "../fixtures");
 
