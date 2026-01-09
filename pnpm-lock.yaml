@@ -8,6 +8,12 @@ importers:
 
   .:
     devDependencies:
+      '@biomejs/biome':
+        specifier: ^2.3.11
+        version: 2.3.11
+      '@kontent-ai/biome-config':
+        specifier: ^0.7.0
+        version: 0.7.0(@biomejs/biome@2.3.11)
       '@types/node':
         specifier: ^24.0.13
         version: 24.0.14
@@ -45,12 +51,6 @@ importers:
         specifier: workspace:*
         version: link:../visual-insights
     devDependencies:
-      '@biomejs/biome':
-        specifier: ^2.3.11
-        version: 2.3.11
-      '@kontent-ai/biome-config':
-        specifier: ^0.7.0
-        version: 0.7.0(@biomejs/biome@2.3.11)
       '@kontent-ai/eslint-config':
         specifier: ^2.3.0
         version: 2.3.0(typescript@5.8.3)
@@ -91,12 +91,6 @@ importers:
         specifier: ^18.0.0
         version: 18.0.0
     devDependencies:
-      '@biomejs/biome':
-        specifier: ^2.3.11
-        version: 2.3.11
-      '@kontent-ai/biome-config':
-        specifier: ^0.7.0
-        version: 0.7.0(@biomejs/biome@2.3.11)
       '@kontent-ai/eslint-config':
         specifier: ^2.3.0
         version: 2.3.0(typescript@5.8.3)
@@ -109,12 +103,6 @@ importers:
 
   packages/shared:
     devDependencies:
-      '@biomejs/biome':
-        specifier: ^2.3.11
-        version: 2.3.11
-      '@kontent-ai/biome-config':
-        specifier: ^0.7.0
-        version: 0.7.0(@biomejs/biome@2.3.11)
       '@kontent-ai/eslint-config':
         specifier: ^2.3.0
         version: 2.3.0(typescript@5.8.3)
@@ -143,12 +131,6 @@ importers:
         specifier: ^4.0.10
         version: 4.0.10
     devDependencies:
-      '@biomejs/biome':
-        specifier: ^2.3.11
-        version: 2.3.11
-      '@kontent-ai/biome-config':
-        specifier: ^0.7.0
-        version: 0.7.0(@biomejs/biome@2.3.11)
       '@kontent-ai/eslint-config':
         specifier: ^2.3.0
         version: 2.3.0(typescript@5.8.3)

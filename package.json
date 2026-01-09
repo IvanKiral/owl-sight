@@ -3,15 +3,18 @@
   "private": true,
   "packageManager": "pnpm@10.13.1",
   "scripts": {
-    "build": "turbo run build",
+    "build": "turbo run build --log-order=grouped",
     "biome:check": "biome check .",
-    "biome:check:fix": "biome check . --write",
+    "biome:fix": "biome check . --write",
     "bootstrap": "pnpm install",
-    "test": "turbo run test",
+    "eslint": "turbo lint",
+    "test": "turbo run test --log-order=grouped",
     "link:cli": "pnpm build && cd packages/owl-cli && pnpm link --global",
     "unlink:cli": "cd packages/owl-cli && pnpm unlink --global"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.3.11",
+    "@kontent-ai/biome-config": "^0.7.0",
     "@types/node": "^24.0.13",
     "pnpm": "^10.13.1",
     "tsx": "^4.0.0",

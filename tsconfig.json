@@ -1,10 +1,10 @@
 {
-	"files": [],
-	"references": [
-		{ "path": "packages/shared" },
-		{ "path": "packages/visual-insights" },
-		{ "path": "packages/cli" },
-		{ "path": "packages/core" },
-		{ "path": "packages/owl-cli" }
-	]
+  "files": [],
+  "references": [
+    { "path": "packages/shared" },
+    { "path": "packages/visual-insights" },
+    { "path": "packages/cli" },
+    { "path": "packages/core" },
+    { "path": "packages/owl-cli" }
+  ]
 }
