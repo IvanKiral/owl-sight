@@ -9,12 +9,22 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc -b"
+    "build": "tsc -b",
+    "lint": "eslint src --ext .ts",
+    "biome:check": "biome check .",
+    "biome:lint": "biome lint .",
+    "biome:fix": "biome check . --write"
   },
   "dependencies": {
     "@google/genai": "^1.12.0",
     "shared": "workspace:*",
     "visual-insights": "workspace:*"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.11",
+    "@kontent-ai/biome-config": "^0.7.0",
+    "@kontent-ai/eslint-config": "^2.3.0",
+    "eslint": "^9.39.0"
   },
   "engines": {
     "node": ">=22.0.0"

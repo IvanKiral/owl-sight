@@ -1,5 +1,5 @@
-import { type WithError, success, error } from "shared";
 import { GoogleGenAI } from "@google/genai";
+import { error, success, type WithError } from "shared";
 
 type GeminiResponse = {
   text: string;
@@ -26,8 +26,6 @@ export const callGemini = async (
       text: response.text,
     });
   } catch (err) {
-    return error(
-      `Gemini API error: ${err instanceof Error ? err.message : String(err)}`,
-    );
+    return error(`Gemini API error: ${err instanceof Error ? err.message : String(err)}`);
   }
 };
