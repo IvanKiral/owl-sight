@@ -1,8 +1,5 @@
-import type {
-  AudioFormat,
-  AudioQuality,
-  FormatSelection,
-} from "./ytdlpAudioTypes.js";
+import type { AudioFormat, AudioQuality, FormatSelection } from "./ytdlpAudioTypes.js";
+import type { MergeOutputFormat, VideoQualityOptions } from "./ytdlpVideoTypes.js";
 
 // Supported browsers for cookie extraction
 export const SUPPORTED_BROWSERS = [
@@ -17,20 +14,13 @@ export const SUPPORTED_BROWSERS = [
   "whale",
 ] as const;
 
-export type SupportedBrowser = typeof SUPPORTED_BROWSERS[number];
+export type SupportedBrowser = (typeof SUPPORTED_BROWSERS)[number];
 
 // Keyring options for Linux Chromium decryption
-export const KEYRINGS = [
-  "basictext",
-  "gnomekeyring",
-  "kwallet",
-  "kwallet5",
-  "kwallet6",
-] as const;
+export const KEYRINGS = ["basictext", "gnomekeyring", "kwallet", "kwallet5", "kwallet6"] as const;
 
-export type Keyring = typeof KEYRINGS[number];
+export type Keyring = (typeof KEYRINGS)[number];
 
-// Cookie configuration options
 export type CookieConfig =
   | {
       type: "browser";
@@ -56,8 +46,16 @@ export type AudioExtractionArgs = CommonExtractionArgs & {
   format?: FormatSelection;
 };
 
+export type VideoExtractionArgs = CommonExtractionArgs & {
+  quality?: VideoQualityOptions;
+  format?: string;
+  mergeOutputFormat?: MergeOutputFormat;
+};
+
 const createCookieArgs = (cookies?: CookieConfig): ReadonlyArray<string> => {
-  if (!cookies) return [];
+  if (!cookies) {
+    return [];
+  }
 
   if (cookies.type === "file") {
     return ["--cookies", cookies.path];
@@ -84,17 +82,60 @@ export const createYtDlpExtractAudioArgs = (
     "--restrict-filenames",
     "--no-playlist",
 
-    ...(options.verbose !== undefined
-      ? ["--verbose", options.verbose ? "True" : "False"]
-      : []),
+    ...(options.verbose !== undefined ? ["--verbose", options.verbose ? "True" : "False"] : []),
     ...(options.quiet ? ["--quiet"] : []),
 
     ...(options.writeInfoJson ? ["--write-info-json"] : []),
 
-    // Cookie arguments
     ...createCookieArgs(options.cookies),
 
-    // Output path (required)
+    "-o",
+    options.outputPath,
+  ];
+};
+
+export const buildVideoFormatString = (quality: VideoQualityOptions): string => {
+  const height = quality.maxHeight ?? 1080;
+  const fps = quality.maxFps ?? 30;
+  const vcodec = quality.preferredVideoCodec ?? "av01";
+  const acodec = quality.preferredAudioCodec ?? "opus";
+
+  const fallbackCodec = vcodec === "av01" ? "vp9" : "av01";
+
+  // Format selection with fallback priority (left to right):
+  // 1. Preferred codec video-only stream
+  // 2. Fallback codec video + preferred audio codec
+  // 3. Any best available format
+  return [
+    `bv*[height<=${height}][fps<=${fps}][vcodec^=${vcodec}]`,
+    `bv*[height<=${height}][fps<=${fps}][vcodec^=${fallbackCodec}]+ba[acodec^=${acodec}]`,
+    "best",
+  ].join("/");
+};
+
+export const createYtDlpExtractVideoArgs = (
+  options: VideoExtractionArgs,
+): ReadonlyArray<string> => {
+  const formatString = options.format ?? buildVideoFormatString(options.quality ?? {});
+
+  return [
+    "-f",
+    formatString,
+    "--merge-output-format",
+    options.mergeOutputFormat ?? "mkv",
+    "--infojson-filename",
+    "video.info.json",
+
+    "--restrict-filenames",
+    "--no-playlist",
+
+    ...(options.verbose !== undefined ? ["--verbose", options.verbose ? "True" : "False"] : []),
+    ...(options.quiet ? ["--quiet"] : []),
+
+    ...(options.writeInfoJson ? ["--write-info-json"] : []),
+
+    ...createCookieArgs(options.cookies),
+
     "-o",
     options.outputPath,
   ];

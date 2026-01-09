@@ -1,18 +1,17 @@
+import { readFile } from "node:fs/promises";
 import camelcaseKeys from "camelcase-keys";
-import { readFile } from "fs/promises";
-import z from "zod";
-import { WithError, success, error } from "shared";
+import { type WithError, error, success } from "shared";
+import type z from "zod";
 import {
-  YtDlpYoutubeMetadaKeys,
-  YtDlpYoutubeMetadataSchema,
-  YtDlpYoutubeMetadata,
-  YtDlpInstagramMetadataKeys,
+  type YtDlpInstagramMetadataKeys,
+  type YtDlpInstagramReelMetadata,
   YtDlpInstagramReelMetadataSchema,
-  YtDlpInstagramReelMetadata,
+  type YtDlpYoutubeMetadaKeys,
+  type YtDlpYoutubeMetadata,
+  YtDlpYoutubeMetadataSchema,
 } from "./ytdlpTypes.js";
 
-const camelize = <T extends Record<string, unknown>>(val: T) =>
-  camelcaseKeys(val);
+const camelize = <T extends Record<string, unknown>>(val: T) => camelcaseKeys(val);
 
 const parseMetadataFromYoutube = <K extends readonly YtDlpYoutubeMetadaKeys[]>(
   jsonString: string,
@@ -21,23 +20,14 @@ const parseMetadataFromYoutube = <K extends readonly YtDlpYoutubeMetadaKeys[]>(
   return parseMetadata(YtDlpYoutubeMetadataSchema, metadataKeys, jsonString);
 };
 
-const parseMetadataFromInstagram = <
-  K extends readonly YtDlpInstagramMetadataKeys[],
->(
+const parseMetadataFromInstagram = <K extends readonly YtDlpInstagramMetadataKeys[]>(
   jsonString: string,
   metadataKeys: K,
 ): WithError<Pick<YtDlpInstagramReelMetadata, K[number]>, string> => {
-  return parseMetadata(
-    YtDlpInstagramReelMetadataSchema,
-    metadataKeys,
-    jsonString,
-  );
+  return parseMetadata(YtDlpInstagramReelMetadataSchema, metadataKeys, jsonString);
 };
 
-const parseMetadata = <
-  S extends z.ZodObject,
-  K extends readonly (keyof z.infer<S>)[],
->(
+const parseMetadata = <S extends z.ZodObject, K extends readonly (keyof z.infer<S>)[]>(
   schema: S,
   keys: K,
   data: unknown,
@@ -49,14 +39,10 @@ const parseMetadata = <
   const result = schema.required().pick(pickObj).safeParse(data);
 
   if (!result.success) {
-    return error(
-      `Validation failed: ${result.error.issues.map((i) => i.message).join("; ")}`,
-    );
+    return error(`Validation failed: ${result.error.issues.map((i) => i.message).join("; ")}`);
   }
 
-  return success(
-    result.data as unknown as Pick<Required<z.infer<S>>, K[number]>,
-  );
+  return success(result.data as unknown as Pick<Required<z.infer<S>>, K[number]>);
 };
 
 export type VideoMetadata =
@@ -69,16 +55,12 @@ export type VideoMetadata =
       metadata: ReadonlyArray<YtDlpInstagramMetadataKeys>;
     };
 
-export async function extractMetadata<
-  K extends readonly YtDlpYoutubeMetadaKeys[],
->(
+export async function extractMetadata<K extends readonly YtDlpYoutubeMetadaKeys[]>(
   filePath: string,
   options: { type: "youtube"; metadata: K },
 ): Promise<WithError<Pick<YtDlpYoutubeMetadata, K[number]>, string>>;
 
-export async function extractMetadata<
-  K extends readonly YtDlpInstagramMetadataKeys[],
->(
+export async function extractMetadata<K extends readonly YtDlpInstagramMetadataKeys[]>(
   filePath: string,
   options: { type: "instagram"; metadata: K },
 ): Promise<WithError<Pick<YtDlpInstagramReelMetadata, K[number]>, string>>;

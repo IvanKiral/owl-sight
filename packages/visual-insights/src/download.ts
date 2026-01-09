@@ -1,29 +1,24 @@
 import * as path from "node:path";
-import {
-  AudioExtractionArgs,
-  createYtDlpExtractAudioArgs,
-} from "./ytdlp/cmdArgs.js";
+import { type WithError, error, success } from "shared";
+import { type VideoExtractionArgs, createYtDlpExtractVideoArgs } from "./ytdlp/cmdArgs.js";
 import { runYtDlp } from "./ytdlp/runYtdlp.js";
-import { WithError, success, error } from "shared";
 
-export type YtDlpAudioOptions = Partial<
-  Pick<AudioExtractionArgs, "audioFormat" | "audioQuality" | "format" | "quiet" | "cookies">
+export type YtDlpVideoOptions = Partial<
+  Pick<VideoExtractionArgs, "quality" | "format" | "mergeOutputFormat" | "quiet" | "cookies">
 >;
 
 export const downloadDataFromVideo = async (
   url: string,
   dirPath: string,
-  options?: YtDlpAudioOptions & { metadata?: boolean },
-): Promise<WithError<{ audioFilePath: string; metadataFilePath: string }, string>> => {
-  const outTemplate = path.join(
-    dirPath,
-    `audio.${options?.audioFormat ?? "m4a"}`,
-  );
+  options?: YtDlpVideoOptions & { metadata?: boolean },
+): Promise<WithError<{ videoFilePath: string; metadataFilePath: string }, string>> => {
+  const extension = options?.mergeOutputFormat ?? "mkv";
+  const outTemplate = path.join(dirPath, `video.${extension}`);
 
-  const ytdlArgs = createYtDlpExtractAudioArgs({
-    audioFormat: options?.audioFormat ?? "m4a",
-    audioQuality: options?.audioQuality ?? 0,
-    format: options?.format ?? "bestaudio/best",
+  const ytdlArgs = createYtDlpExtractVideoArgs({
+    quality: options?.quality,
+    format: options?.format,
+    mergeOutputFormat: options?.mergeOutputFormat,
     outputPath: outTemplate,
     writeInfoJson: options?.metadata ?? true,
     quiet: options?.quiet ?? false,
@@ -33,8 +28,8 @@ export const downloadDataFromVideo = async (
   try {
     await runYtDlp(url, ytdlArgs as string[]);
     return success({
-      audioFilePath: outTemplate,
-      metadataFilePath: path.join(dirPath, "audio.info.json"),
+      videoFilePath: outTemplate,
+      metadataFilePath: path.join(dirPath, "video.info.json"),
     });
   } catch (e) {
     return error(`Failed to download video: ${e}`);

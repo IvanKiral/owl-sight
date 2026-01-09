@@ -10,7 +10,7 @@ import type {
   Keyring,
 } from "visual-insights";
 import type { CommandModule } from "yargs";
-import { createCookieConfig } from "../../lib/cookieConfig.js";
+import { createCookieConfig } from "core";
 
 type ExtractType = "description" | "transcription";
 
