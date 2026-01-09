@@ -12,10 +12,7 @@
     "unlink:cli": "cd packages/owl-cli && pnpm unlink --global"
   },
   "devDependencies": {
-    "@kontent-ai/biome-config": "^0.4.0",
-    "@kontent-ai/eslint-config": "^2.0.1",
     "@types/node": "^24.0.13",
-    "biome": "^0.3.3",
     "pnpm": "^10.13.1",
     "tsx": "^4.0.0",
     "turbo": "^2.5.5",

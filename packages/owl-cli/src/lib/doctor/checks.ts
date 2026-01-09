@@ -1,6 +1,6 @@
-import { execa } from "execa";
 import * as fs from "node:fs/promises";
-import { type WithError, success, error } from "shared";
+import { execa } from "execa";
+import { error, success, type WithError } from "shared";
 
 export type DependencyCheckResult = Readonly<{
   name: string;
@@ -10,33 +10,30 @@ export type DependencyCheckResult = Readonly<{
 
 const checkCommand = (
   command: string,
-  checkFlag: "--version" | string = "--version"
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+  checkFlag: "--version" | string = "--version",
 ): Promise<WithError<DependencyCheckResult, string>> => {
-  return execa(command, [checkFlag])
-    .then((result) => {
-      const version =
-        checkFlag === "--version"
-          ? result.stdout.trim().split("\n")[0]
-          : undefined;
+  return (
+    execa(command, [checkFlag])
+      .then((result) => {
+        const version = checkFlag === "--version" ? result.stdout.trim().split("\n")[0] : undefined;
 
-      return success({
-        name: command,
-        installed: true,
-        version,
-      });
-    })
-    .catch((err) => error(`Failed to check ${command}: ${err.message}`));
+        return success({
+          name: command,
+          installed: true,
+          version,
+        });
+      })
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      .catch((err) => error(`Failed to check ${command}: ${err.message}`))
+  );
 };
 
-export const checkWhisper = async (): Promise<
-  WithError<DependencyCheckResult, string>
-> => {
+export const checkWhisper = (): Promise<WithError<DependencyCheckResult, string>> => {
   return checkCommand("whisper", "--help");
 };
 
-export const checkYtDlp = async (): Promise<
-  WithError<DependencyCheckResult, string>
-> => {
+export const checkYtDlp = (): Promise<WithError<DependencyCheckResult, string>> => {
   return checkCommand("yt-dlp");
 };
 

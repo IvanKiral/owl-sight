@@ -1,15 +1,15 @@
-import type { Argv } from "yargs";
-import type { WhisperLanguageName } from "visual-insights";
-import { compileFromFile } from "json-schema-to-typescript";
 import path from "node:path";
 import {
-  type OutputFormat,
-  markdownDescriptionInstruction,
   createRecipePrompt,
+  markdownDescriptionInstruction,
+  type OutputFormat,
   type RecipePromptData,
 } from "core";
+import { compileFromFile } from "json-schema-to-typescript";
+import { error, success, type WithError } from "shared";
+import type { WhisperLanguageName } from "visual-insights";
+import type { Argv } from "yargs";
 import { resolveDefaultRecipeSchema } from "../../lib/recipeSchema.js";
-import { success, error, type WithError } from "shared";
 
 export const yargsWithRecipeSchema = <T>(yargs: Argv<T>) =>
   yargs.option("recipe-schema", {
@@ -38,7 +38,9 @@ export const getRecipeSchema = async (
 
     return success(schema);
   } catch (err) {
-    return error(`Failed to get recipe schema: ${err instanceof Error ? err.message : String(err)}`);
+    return error(
+      `Failed to get recipe schema: ${err instanceof Error ? err.message : String(err)}`,
+    );
   }
 };
 

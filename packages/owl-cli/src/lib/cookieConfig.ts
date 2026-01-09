@@ -1,4 +1,4 @@
-import type { CookieConfig, SupportedBrowser, Keyring } from "visual-insights";
+import type { CookieConfig, Keyring, SupportedBrowser } from "visual-insights";
 
 type CookieConfigOptions = Readonly<{
   cookiesFile?: string;

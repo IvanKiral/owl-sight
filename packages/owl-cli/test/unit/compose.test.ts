@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import type { Argv } from "yargs";
 import { compose, type OptionBuilder } from "../../src/commands/helpers/commandOptionsComposer.js";
 
@@ -29,7 +29,7 @@ describe("compose", () => {
     // Runtime: call with a minimal dummy Argv-like object
     const dummyArgv = {
       // Only properties touched by the test are needed; keep minimal
-    } as unknown as Argv<{}>;
+    } as unknown as Argv<Record<string, never>>;
 
     const result = composed(dummyArgv);
 
@@ -38,7 +38,7 @@ describe("compose", () => {
 
   it("works with no mixins (identity)", () => {
     const composed = compose();
-    const dummyArgv = {} as unknown as Argv<{}>;
+    const dummyArgv = {} as unknown as Argv<Record<string, never>>;
     const result = composed(dummyArgv);
     expect(result).toBe(dummyArgv);
   });
@@ -48,9 +48,10 @@ describe("compose", () => {
     type WithBar = { bar: number };
 
     const withFoo: OptionBuilder<WithFoo> = <I>(argv: Argv<I>): Argv<I & WithFoo> =>
-      argv.option("foo", { type: "string", describe: "Foo option" }) as unknown as Argv<
-        I & WithFoo
-      >;
+      argv.option("foo", {
+        type: "string",
+        describe: "Foo option",
+      }) as unknown as Argv<I & WithFoo>;
 
     const withBar: OptionBuilder<WithBar> = <I>(argv: Argv<I>): Argv<I & WithBar> =>
       argv.option("bar", { type: "number", default: 1 }) as unknown as Argv<I & WithBar>;
@@ -62,7 +63,7 @@ describe("compose", () => {
         calls.push({ key, opts });
         return this;
       },
-    } as unknown as Argv<{}>;
+    } as unknown as Argv<Record<string, never>>;
 
     const composed = compose(withFoo, withBar);
     const result = composed(dummyArgv);

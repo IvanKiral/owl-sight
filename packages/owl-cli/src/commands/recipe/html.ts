@@ -1,22 +1,21 @@
-import { getWebpageData, WHISPER_LANGUAGES } from "visual-insights";
-import { type WhisperLanguage, getLanguageName } from "visual-insights";
-import type { CommandModule } from "yargs";
+import { addUrlToResponse, callGemini, deserializeGeminiResponse, type OutputFormat } from "core";
 import {
-  callGemini,
-  deserializeGeminiResponse,
-  addUrlToResponse,
-  type OutputFormat,
-} from "core";
+  getLanguageName,
+  getWebpageData,
+  WHISPER_LANGUAGES,
+  type WhisperLanguage,
+} from "visual-insights";
+import type { CommandModule } from "yargs";
 import { getGeminiApiKey } from "../../lib/gemini/geminiKey.js";
 import { compose } from "../helpers/commandOptionsComposer.js";
-import { handleRecipePrompt, yargsWithRecipeSchema } from "../helpers/withRecipeSchema.js";
-import { handleOutput, yargsWithOutput } from "../helpers/withOutput.js";
-import { yargsWithOutputFormat } from "../helpers/withOutputFormat.js";
 import {
-  yargsWithModel,
   mapToApiModel,
   type UserFacingModel,
+  yargsWithModel,
 } from "../helpers/withLlmModelSchema.js";
+import { handleOutput, yargsWithOutput } from "../helpers/withOutput.js";
+import { yargsWithOutputFormat } from "../helpers/withOutputFormat.js";
+import { handleRecipePrompt, yargsWithRecipeSchema } from "../helpers/withRecipeSchema.js";
 
 type HtmlRecipeOptions = {
   url: string;
@@ -89,7 +88,7 @@ export const htmlCommand: CommandModule<Record<string, unknown>, HtmlRecipeOptio
         webpageContent: result.result.textContent,
         articleTitle: result.result.metadata.title,
       },
-      outputLanguage: getLanguageName(argv.outputLanguage || "en"),
+      outputLanguage: getLanguageName(argv.outputLanguage ?? "en"),
       format: outputFormat,
     });
 
@@ -118,9 +117,10 @@ export const htmlCommand: CommandModule<Record<string, unknown>, HtmlRecipeOptio
       }
 
       const resultWithUrl = addUrlToResponse(deserializedResult.result, argv.url);
-      const outputString = resultWithUrl.format === "json"
-        ? JSON.stringify(resultWithUrl.parsed, null, 2)
-        : resultWithUrl.parsed;
+      const outputString =
+        resultWithUrl.format === "json"
+          ? JSON.stringify(resultWithUrl.parsed, null, 2)
+          : resultWithUrl.parsed;
 
       const outputResult = handleOutput(argv.output, outputString);
       if (!outputResult.success) {

@@ -1,22 +1,24 @@
+import { createCookieConfig, type OutputFormat, recipeFromVideo } from "core";
 import {
-  WHISPER_LANGUAGES,
-  SUPPORTED_BROWSERS,
-  KEYRINGS,
   getLanguageName,
+  KEYRINGS,
+  type Keyring,
+  SUPPORTED_BROWSERS,
+  type SupportedBrowser,
+  WHISPER_LANGUAGES,
+  type WhisperLanguage,
 } from "visual-insights";
-import type { WhisperLanguage, SupportedBrowser, Keyring } from "visual-insights";
 import type { CommandModule } from "yargs";
-import { recipeFromVideo, createCookieConfig, type OutputFormat } from "core";
 import { getGeminiApiKey } from "../../lib/gemini/geminiKey.js";
 import { compose } from "../helpers/commandOptionsComposer.js";
-import { yargsWithRecipeSchema, getRecipeSchema } from "../helpers/withRecipeSchema.js";
-import { handleOutput, yargsWithOutput } from "../helpers/withOutput.js";
-import { yargsWithOutputFormat } from "../helpers/withOutputFormat.js";
 import {
-  yargsWithModel,
   mapToApiModel,
   type UserFacingModel,
+  yargsWithModel,
 } from "../helpers/withLlmModelSchema.js";
+import { handleOutput, yargsWithOutput } from "../helpers/withOutput.js";
+import { yargsWithOutputFormat } from "../helpers/withOutputFormat.js";
+import { getRecipeSchema, yargsWithRecipeSchema } from "../helpers/withRecipeSchema.js";
 
 type VideoRecipeOptions = {
   url: string;
@@ -139,7 +141,7 @@ export const videoCommand: CommandModule<Record<string, unknown>, VideoRecipeOpt
       schema: schemaResult.result,
       model: mapToApiModel(argv.llmModel ?? "gemini-flash-lite"),
       outputFormat,
-      outputLanguage: getLanguageName(argv.outputLanguage || "en"),
+      outputLanguage: getLanguageName(argv.outputLanguage ?? "en"),
       videoLanguage: argv.videoLanguage,
       cookies: createCookieConfig(argv),
     });

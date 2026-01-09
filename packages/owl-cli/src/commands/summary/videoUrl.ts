@@ -1,23 +1,25 @@
+import { addUrlToResponse, callGemini, createCookieConfig, deserializeGeminiResponse } from "core";
 import {
-  getVideoData,
-  WHISPER_LANGUAGES,
-  SUPPORTED_BROWSERS,
-  KEYRINGS,
   getLanguageName,
+  getVideoData,
+  KEYRINGS,
+  type Keyring,
+  SUPPORTED_BROWSERS,
+  type SupportedBrowser,
+  WHISPER_LANGUAGES,
+  type WhisperLanguage,
 } from "visual-insights";
-import type { WhisperLanguage, SupportedBrowser, Keyring } from "visual-insights";
 import type { CommandModule } from "yargs";
-import { callGemini, deserializeGeminiResponse, addUrlToResponse, createCookieConfig } from "core";
 import { getGeminiApiKey } from "../../lib/gemini/geminiKey.js";
+import { createSummaryPrompt } from "../../lib/prompts/summaryPrompt.js";
 import { compose } from "../helpers/commandOptionsComposer.js";
-import { handleOutput, yargsWithOutput } from "../helpers/withOutput.js";
+import { yargsWithCustomPrompt } from "../helpers/withCustomPrompt.js";
 import {
-  yargsWithModel,
   mapToApiModel,
   type UserFacingModel,
+  yargsWithModel,
 } from "../helpers/withLlmModelSchema.js";
-import { yargsWithCustomPrompt } from "../helpers/withCustomPrompt.js";
-import { createSummaryPrompt } from "../../lib/prompts/summaryPrompt.js";
+import { handleOutput, yargsWithOutput } from "../helpers/withOutput.js";
 
 type VideoSummaryOptions = {
   url: string;
@@ -140,7 +142,7 @@ export const videoCommand: CommandModule<Record<string, unknown>, VideoSummaryOp
         transcribedText: result.result.transcription,
         description: result.result.metadata.description ?? "",
       },
-      language: getLanguageName(argv.outputLanguage || "en"),
+      language: getLanguageName(argv.outputLanguage ?? "en"),
       customPrompt: argv.customPrompt,
     });
 

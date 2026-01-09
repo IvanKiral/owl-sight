@@ -1,6 +1,6 @@
 import type { CommandModule } from "yargs";
-import { videoCommand } from "./videoUrl.js";
 import { htmlCommand } from "./html.js";
+import { videoCommand } from "./videoUrl.js";
 
 export const recipeCommand: CommandModule = {
   command: "recipe <command>",

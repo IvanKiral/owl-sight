@@ -1,5 +1,5 @@
 import type { WhisperLanguageName } from "visual-insights";
-import { OutputFormat } from "../constants/output.js";
+import type { OutputFormat } from "../constants/output.js";
 
 export type RecipePromptData =
   | {

@@ -1,4 +1,4 @@
-import { Argv } from "yargs";
+import type { Argv } from "yargs";
 import { OUTPUT_FORMATS } from "../../lib/constants/output.js";
 
 export const yargsWithOutputFormat = <T>(yargs: Argv<T>) => {

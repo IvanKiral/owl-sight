@@ -1,7 +1,7 @@
-import type { Argv } from "yargs";
 import fs from "node:fs";
 import path from "node:path";
-import { success, error } from "shared";
+import { error, success } from "shared";
+import type { Argv } from "yargs";
 
 export const yargsWithOutput = <T>(yargs: Argv<T>) => {
   return yargs.option("output", {
@@ -13,8 +13,7 @@ export const yargsWithOutput = <T>(yargs: Argv<T>) => {
 };
 
 export const handleOutput = (outputArg: string, output: string) => {
-  const outputStream =
-    outputArg === "-" ? process.stdout : fs.createWriteStream(outputArg);
+  const outputStream = outputArg === "-" ? process.stdout : fs.createWriteStream(outputArg);
   try {
     outputStream.write(output);
 
@@ -23,10 +22,6 @@ export const handleOutput = (outputArg: string, output: string) => {
     }
     return success(true);
   } catch (err) {
-    return error(
-      `Failed to write output: ${
-        err instanceof Error ? err.message : String(err)
-      }`
-    );
+    return error(`Failed to write output: ${err instanceof Error ? err.message : String(err)}`);
   }
 };
