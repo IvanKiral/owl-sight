@@ -107,7 +107,20 @@ importers:
         specifier: ^9.39.0
         version: 9.39.2
 
-  packages/shared: {}
+  packages/shared:
+    devDependencies:
+      '@biomejs/biome':
+        specifier: ^2.3.11
+        version: 2.3.11
+      '@kontent-ai/biome-config':
+        specifier: ^0.7.0
+        version: 0.7.0(@biomejs/biome@2.3.11)
+      '@kontent-ai/eslint-config':
+        specifier: ^2.3.0
+        version: 2.3.0(typescript@5.8.3)
+      eslint:
+        specifier: ^9.39.0
+        version: 9.39.2
 
   packages/visual-insights:
     dependencies:
