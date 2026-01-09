@@ -1,9 +1,8 @@
 import { getWebpageData, WHISPER_LANGUAGES } from "visual-insights";
 import { type WhisperLanguage, getLanguageName } from "visual-insights";
 import type { CommandModule } from "yargs";
+import { callGemini, deserializeGeminiResponse, addUrlToResponse } from "core";
 import { getGeminiApiKey } from "../../lib/gemini/geminiKey.js";
-import { callGemini } from "../../lib/gemini/gemini.js";
-import { deserializeGeminiResponse, addUrlToResponse } from "../../lib/gemini/responseUtils.js";
 import { compose } from "../helpers/commandOptionsComposer.js";
 import { handleOutput, yargsWithOutput } from "../helpers/withOutput.js";
 import {

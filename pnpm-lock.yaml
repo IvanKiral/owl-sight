@@ -42,11 +42,26 @@ importers:
         specifier: workspace:*
         version: link:../visual-insights
 
+  packages/core:
+    dependencies:
+      '@google/genai':
+        specifier: ^1.12.0
+        version: 1.12.0
+      shared:
+        specifier: workspace:*
+        version: link:../shared
+      visual-insights:
+        specifier: workspace:*
+        version: link:../visual-insights
+
   packages/owl-cli:
     dependencies:
       '@google/genai':
         specifier: ^1.12.0
         version: 1.12.0
+      core:
+        specifier: workspace:*
+        version: link:../core
       dotenv:
         specifier: ^17.2.2
         version: 17.2.2

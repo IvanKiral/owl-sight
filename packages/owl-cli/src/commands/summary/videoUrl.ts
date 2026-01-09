@@ -7,10 +7,8 @@ import {
 } from "visual-insights";
 import type { WhisperLanguage, SupportedBrowser, Keyring } from "visual-insights";
 import type { CommandModule } from "yargs";
+import { callGemini, deserializeGeminiResponse, addUrlToResponse, createCookieConfig } from "core";
 import { getGeminiApiKey } from "../../lib/gemini/geminiKey.js";
-import { callGemini } from "../../lib/gemini/gemini.js";
-import { deserializeGeminiResponse, addUrlToResponse } from "../../lib/gemini/responseUtils.js";
-import { createCookieConfig } from "../../lib/cookieConfig.js";
 import { compose } from "../helpers/commandOptionsComposer.js";
 import { handleOutput, yargsWithOutput } from "../helpers/withOutput.js";
 import {

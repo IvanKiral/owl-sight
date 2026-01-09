@@ -1,9 +1,9 @@
-import { WhisperOptions } from "./whisperTypes.js";
-import { createWhisperArgs } from "./whisperCmdArgs.js";
-import { runWhisper } from "./runWhisper.js";
-import * as fs from "fs/promises";
+import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { WithError, success, error } from "shared";
+import { type WithError, error, success } from "shared";
+import { runWhisper } from "./runWhisper.js";
+import { createWhisperArgs } from "./whisperCmdArgs.js";
+import type { WhisperOptions } from "./whisperTypes.js";
 
 export const transcribe = async (
   filePath: string,
@@ -18,10 +18,7 @@ export const transcribe = async (
     });
     await runWhisper(whisperArgs);
 
-    const transcription = await fs.readFile(
-      path.join(folderPath, "audio.txt"),
-      "utf8",
-    );
+    const transcription = await fs.readFile(path.join(folderPath, "video.txt"), "utf8");
     return success(transcription);
   } catch (e) {
     return error(`Failed to transcribe: ${e}`);

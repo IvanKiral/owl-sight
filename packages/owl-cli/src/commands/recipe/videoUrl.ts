@@ -1,5 +1,4 @@
 import {
-  getVideoData,
   WHISPER_LANGUAGES,
   SUPPORTED_BROWSERS,
   KEYRINGS,
@@ -7,15 +6,12 @@ import {
 } from "visual-insights";
 import type { WhisperLanguage, SupportedBrowser, Keyring } from "visual-insights";
 import type { CommandModule } from "yargs";
+import { recipeFromVideo, createCookieConfig, type OutputFormat } from "core";
 import { getGeminiApiKey } from "../../lib/gemini/geminiKey.js";
-import { callGemini } from "../../lib/gemini/gemini.js";
-import { deserializeGeminiResponse, addUrlToResponse } from "../../lib/gemini/responseUtils.js";
-import { createCookieConfig } from "../../lib/cookieConfig.js";
 import { compose } from "../helpers/commandOptionsComposer.js";
-import { yargsWithRecipeSchema, handleRecipePrompt } from "../helpers/withRecipeSchema.js";
+import { yargsWithRecipeSchema, getRecipeSchema } from "../helpers/withRecipeSchema.js";
 import { handleOutput, yargsWithOutput } from "../helpers/withOutput.js";
 import { yargsWithOutputFormat } from "../helpers/withOutputFormat.js";
-import type { OutputFormat } from "../../lib/constants/output.js";
 import {
   yargsWithModel,
   mapToApiModel,
@@ -119,41 +115,13 @@ export const videoCommand: CommandModule<Record<string, unknown>, VideoRecipeOpt
   },
 
   handler: async (argv) => {
-    console.log("🎬 Processing video:", argv.url);
+    console.log("Processing video:", argv.url);
 
-    const outputFormat = argv.outputFormat ?? "json";
+    const outputFormat: OutputFormat = argv.outputFormat ?? "json";
 
-    const result = await getVideoData(argv.url, {
-      ytdlpOptions: {
-        quiet: true,
-        cookies: createCookieConfig(argv),
-      },
-      whisperOptions: {
-        verbose: "False",
-        model: "turbo",
-        ...(argv.videoLanguage && { language: argv.videoLanguage }),
-      },
-    });
-
-    if (!result.success) {
-      console.error("Error processing video:", result.error);
-      process.exit(1);
-    }
-
-    console.log("✅ Video transcribed successfully");
-
-    const promptResult = await handleRecipePrompt({
-      recipeSchemaPath: argv.recipeSchema,
-      data: {
-        transcribedText: result.result.transcription,
-        description: result.result.metadata.description ?? "",
-      },
-      outputLanguage: getLanguageName(argv.outputLanguage || "en"),
-      format: outputFormat,
-    });
-
-    if (!promptResult.success) {
-      console.error("Error creating recipe prompt:", promptResult.error);
+    const schemaResult = await getRecipeSchema(outputFormat, argv.recipeSchema);
+    if (!schemaResult.success) {
+      console.error("Error getting recipe schema:", schemaResult.error);
       process.exit(1);
     }
 
@@ -163,37 +131,34 @@ export const videoCommand: CommandModule<Record<string, unknown>, VideoRecipeOpt
       process.exit(1);
     }
 
-    console.log("Generating recipe...");
-    const geminiResult = await callGemini(
-      apiKeyResult.result,
-      mapToApiModel(argv.llmModel ?? "gemini-flash-lite"),
-      promptResult.result,
-    );
+    console.log("Downloading and transcribing video...");
 
-    if (!geminiResult.success) {
-      console.error("Error calling Gemini API:", geminiResult.error);
+    const result = await recipeFromVideo({
+      url: argv.url,
+      apiKey: apiKeyResult.result,
+      schema: schemaResult.result,
+      model: mapToApiModel(argv.llmModel ?? "gemini-flash-lite"),
+      outputFormat,
+      outputLanguage: getLanguageName(argv.outputLanguage || "en"),
+      videoLanguage: argv.videoLanguage,
+      cookies: createCookieConfig(argv),
+    });
+
+    if (!result.success) {
+      console.error("Error:", result.error);
       process.exit(1);
     }
 
-    console.log("✨ Recipe generated successfully!");
-    try {
-      const deserializedResult = deserializeGeminiResponse(geminiResult.result.text, outputFormat);
-      if (!deserializedResult.success) {
-        throw new Error(deserializedResult.error);
-      }
+    console.log("Recipe generated successfully!");
 
-      const resultWithUrl = addUrlToResponse(deserializedResult.result, argv.url);
-      const outputString = resultWithUrl.format === "json"
-        ? JSON.stringify(resultWithUrl.parsed, null, 2)
-        : resultWithUrl.parsed;
+    const outputString =
+      result.result.content.format === "json"
+        ? JSON.stringify(result.result.content.parsed, null, 2)
+        : result.result.content.parsed;
 
-      const outputResult = handleOutput(argv.output, outputString);
-      if (!outputResult.success) {
-        throw new Error(outputResult.error);
-      }
-    } catch (parseError) {
-      console.log("Raw response (could not parse as JSON):", parseError);
-      console.log(geminiResult.result.text);
+    const outputResult = handleOutput(argv.output, outputString);
+    if (!outputResult.success) {
+      console.error("Error writing output:", outputResult.error);
       process.exit(1);
     }
 
