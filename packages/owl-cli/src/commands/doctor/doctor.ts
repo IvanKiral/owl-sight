@@ -1,12 +1,12 @@
+import type { WithError } from "shared";
 import type { CommandModule } from "yargs";
 import {
+  checkFileExists,
   checkWhisper,
   checkYtDlp,
-  checkFileExists,
   type DependencyCheckResult,
 } from "../../lib/doctor/checks.js";
 import { userRecipeConfigSchemaPath } from "../../lib/recipeSchema.js";
-import { type WithError } from "shared";
 
 export const doctorCommand: CommandModule = {
   command: "doctor",
@@ -21,9 +21,7 @@ export const doctorCommand: CommandModule = {
     ];
 
     const [dependencyResults, schemaResult] = await Promise.all([
-      Promise.all(
-        dependencies.map((dep) => checkDependency(dep.name, dep.checkFn))
-      ),
+      Promise.all(dependencies.map(async (dep) => checkDependency(dep.name, dep.checkFn))),
       checkRecipeSchema(),
     ]);
 
@@ -44,7 +42,7 @@ type CheckResult = Readonly<{
 
 const checkDependency = async (
   name: string,
-  checkFn: () => Promise<WithError<DependencyCheckResult, string>>
+  checkFn: () => Promise<WithError<DependencyCheckResult, string>>,
 ): Promise<CheckResult> => {
   const result = await checkFn();
 
@@ -110,15 +108,13 @@ const printResults = (results: ReadonlyArray<CheckResult>) => {
 const printSummary = (results: ReadonlyArray<CheckResult>) => {
   const issueCount = results.filter((r) => !r.isHealthy).length;
 
-  console.log("\n" + "─".repeat(50));
+  console.log(`\n${"─".repeat(50)}`);
 
   if (issueCount === 0) {
     console.log("✨ All checks passed!");
     return 0;
   }
 
-  console.log(
-    `⚠️  Summary: ${issueCount} issue${issueCount > 1 ? "s" : ""} found`
-  );
+  console.log(`⚠️  Summary: ${issueCount} issue${issueCount > 1 ? "s" : ""} found`);
   return 1;
 };

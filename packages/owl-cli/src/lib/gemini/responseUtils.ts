@@ -20,7 +20,10 @@ export const deserializeGeminiResponse = (
   }
 
   try {
-    return success({ format: "json", parsed: JSON.parse(cleanedResponse) });
+    return success({
+      format: "json",
+      parsed: JSON.parse(cleanedResponse) as DeserializedGeminiOutput,
+    });
   } catch (err) {
     throw error(`Failed to parse JSON response: ${JSON.stringify(err)}`);
   }

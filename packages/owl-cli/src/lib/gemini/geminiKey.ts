@@ -1,5 +1,5 @@
-import { type WithError, success, error } from "shared";
 import * as dotenv from "dotenv";
+import { error, success, type WithError } from "shared";
 
 dotenv.config();
 
@@ -37,7 +37,7 @@ const promptForApiKey = async (): Promise<WithError<string, string>> => {
     }
 
     return success(response.apiKey);
-  } catch (err) {
+  } catch (_err) {
     return error("API key is required to continue");
   }
 };

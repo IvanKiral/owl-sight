@@ -1,17 +1,21 @@
-import { getWebpageData, WHISPER_LANGUAGES } from "visual-insights";
-import { type WhisperLanguage, getLanguageName } from "visual-insights";
-import type { CommandModule } from "yargs";
-import { callGemini, deserializeGeminiResponse, addUrlToResponse } from "core";
-import { getGeminiApiKey } from "../../lib/gemini/geminiKey.js";
-import { compose } from "../helpers/commandOptionsComposer.js";
-import { handleOutput, yargsWithOutput } from "../helpers/withOutput.js";
+import { addUrlToResponse, callGemini, deserializeGeminiResponse } from "core";
 import {
-  yargsWithModel,
+  getLanguageName,
+  getWebpageData,
+  WHISPER_LANGUAGES,
+  type WhisperLanguage,
+} from "visual-insights";
+import type { CommandModule } from "yargs";
+import { getGeminiApiKey } from "../../lib/gemini/geminiKey.js";
+import { createSummaryPrompt } from "../../lib/prompts/summaryPrompt.js";
+import { compose } from "../helpers/commandOptionsComposer.js";
+import { yargsWithCustomPrompt } from "../helpers/withCustomPrompt.js";
+import {
   mapToApiModel,
   type UserFacingModel,
+  yargsWithModel,
 } from "../helpers/withLlmModelSchema.js";
-import { yargsWithCustomPrompt } from "../helpers/withCustomPrompt.js";
-import { createSummaryPrompt } from "../../lib/prompts/summaryPrompt.js";
+import { handleOutput, yargsWithOutput } from "../helpers/withOutput.js";
 
 type HtmlSummaryOptions = {
   url: string;
@@ -75,7 +79,7 @@ export const htmlCommand: CommandModule<Record<string, unknown>, HtmlSummaryOpti
         webpageContent: result.result.textContent,
         articleTitle: result.result.metadata.title,
       },
-      language: getLanguageName(argv.outputLanguage || "en"),
+      language: getLanguageName(argv.outputLanguage ?? "en"),
       customPrompt: argv.customPrompt,
     });
 

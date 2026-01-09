@@ -10,7 +10,7 @@ type UnionToIntersection<U> = (U extends unknown ? (arg: U) => void : never) ext
   ? I
   : never;
 
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+// biome-ignore lint/suspicious/noExplicitAny: intentional any
 export function compose<M extends readonly OptionBuilder<any>[]>(
   ...mixins: M
 ): <I>(argv: Argv<I>) => Argv<I & UnionToIntersection<UnionOfOutputs<M>>> {

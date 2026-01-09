@@ -1,16 +1,14 @@
+import { createCookieConfig } from "core";
 import {
   getVideoData,
-  WHISPER_LANGUAGES,
-  SUPPORTED_BROWSERS,
   KEYRINGS,
-} from "visual-insights";
-import type {
-  WhisperLanguage,
-  SupportedBrowser,
-  Keyring,
+  type Keyring,
+  SUPPORTED_BROWSERS,
+  type SupportedBrowser,
+  WHISPER_LANGUAGES,
+  type WhisperLanguage,
 } from "visual-insights";
 import type { CommandModule } from "yargs";
-import { createCookieConfig } from "core";
 
 type ExtractType = "description" | "transcription";
 
@@ -24,6 +22,7 @@ type VideoExtractOptions = Readonly<{
   cookiesFile?: string;
 }>;
 
+// biome-ignore lint/complexity/noBannedTypes: Intentionally use {}
 export const extractCommand: CommandModule<{}, VideoExtractOptions> = {
   command: "extract <url>",
   describe: "Extract data from a video URL (description, transcription, or both)",
@@ -48,8 +47,7 @@ export const extractCommand: CommandModule<{}, VideoExtractOptions> = {
         alias: "video-lang",
       } as const)
       .option("cookies-from-browser", {
-        describe:
-          "Browser to extract cookies from (for age-restricted or private videos)",
+        describe: "Browser to extract cookies from (for age-restricted or private videos)",
         type: "string",
         choices: SUPPORTED_BROWSERS,
         alias: "c",
@@ -103,10 +101,9 @@ export const extractCommand: CommandModule<{}, VideoExtractOptions> = {
     console.log("🎬 Processing video:", argv.url);
 
     // Determine what to extract - default to both if not specified
-    const extractTypes = argv.extractType?.length 
+    const extractTypes = argv.extractType?.length
       ? argv.extractType
       : ["description", "transcription"];
-
 
     console.log(`📋 Extracting: ${extractTypes.join(", ")}`);
 
@@ -138,4 +135,3 @@ export const extractCommand: CommandModule<{}, VideoExtractOptions> = {
     console.log("\nComplete!");
   },
 };
-
