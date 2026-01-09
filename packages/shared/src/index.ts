@@ -1,2 +1,8 @@
-// Main export file for @owl-sight/shared
-export { type WithError, success, error } from "./utils/error.js";
+export {
+  type WithError,
+  success,
+  error,
+  mapResult,
+  flatMapResult,
+  flatMapResultAsync,
+} from "./utils/error.js";
