@@ -1,8 +1,8 @@
 export {
-  type WithError,
-  success,
-  error,
-  mapResult,
-  flatMapResult,
-  flatMapResultAsync,
+	error,
+	flatMapResult,
+	flatMapResultAsync,
+	mapResult,
+	success,
+	type WithError,
 } from "./utils/error.js";
