@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import camelcaseKeys from "camelcase-keys";
-import { type WithError, error, success } from "shared";
+import { error, success, type WithError } from "shared";
 import type z from "zod";
 import {
   type YtDlpInstagramMetadataKeys,
@@ -68,15 +68,16 @@ export async function extractMetadata<K extends readonly YtDlpInstagramMetadataK
 export async function extractMetadata(
   filePath: string,
   options: VideoMetadata,
+  // biome-ignore lint/suspicious/noExplicitAny: Implementation signature for overloaded function
 ): Promise<WithError<any, string>> {
   try {
     const fileData = await readFile(filePath, "utf-8");
-    const jsonData = JSON.parse(fileData);
+    const jsonData: unknown = JSON.parse(fileData);
 
     const parseResult =
       options.type === "youtube"
-        ? parseMetadataFromYoutube(jsonData, options.metadata)
-        : parseMetadataFromInstagram(jsonData, options.metadata);
+        ? parseMetadataFromYoutube(jsonData as string, options.metadata)
+        : parseMetadataFromInstagram(jsonData as string, options.metadata);
 
     if (!parseResult.success) {
       return error(

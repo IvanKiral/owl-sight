@@ -43,12 +43,8 @@ export const YtDlpYoutubeMetadataSchema = z.object({
   series: z.string().optional(),
   episode: z.string().optional(),
   thumbnail: z.string().optional(),
-  subtitles: z
-    .record(z.string(), z.array(YtDlpYoutubeSubtitleFormatSchema))
-    .optional(),
-  automatic_captions: z
-    .record(z.string(), z.array(YtDlpYoutubeSubtitleFormatSchema))
-    .optional(),
+  subtitles: z.record(z.string(), z.array(YtDlpYoutubeSubtitleFormatSchema)).optional(),
+  automatic_captions: z.record(z.string(), z.array(YtDlpYoutubeSubtitleFormatSchema)).optional(),
 });
 
 export const YtDlpInstagramReelMetadataSchema = z.object({
@@ -67,14 +63,10 @@ export const YtDlpInstagramReelMetadataSchema = z.object({
 
 // CamelCase types inferred from transformed schemas
 export type YtDlpYoutubeChapter = z.infer<typeof YtDlpYoutubeChapterSchema>;
-export type YtDlpYoutubeSubtitleFormat = z.infer<
-  typeof YtDlpYoutubeSubtitleFormatSchema
->;
+export type YtDlpYoutubeSubtitleFormat = z.infer<typeof YtDlpYoutubeSubtitleFormatSchema>;
 export type YtDlpYoutubeMetadata = z.infer<typeof YtDlpYoutubeMetadataSchema>;
 export type YtDlpInstagramComment = z.infer<typeof YtDlpInstagramCommentSchema>;
-export type YtDlpInstagramReelMetadata = z.infer<
-  typeof YtDlpInstagramReelMetadataSchema
->;
+export type YtDlpInstagramReelMetadata = z.infer<typeof YtDlpInstagramReelMetadataSchema>;
 
 export type YtDlpYoutubeMetadaKeys = keyof YtDlpYoutubeMetadata;
 export type YtDlpInstagramMetadataKeys = keyof YtDlpInstagramReelMetadata;

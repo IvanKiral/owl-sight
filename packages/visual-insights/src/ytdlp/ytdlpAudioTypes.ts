@@ -28,10 +28,5 @@ export type FormatSelection =
   | `ba`
   | `ba*`;
 
-// Output template options
-export type OutputTemplate =
-  | "%(title)s.%(ext)s"
-  | "%(channel)s - %(title)s.%(ext)s"
-  | "%(uploader)s - %(title)s.%(ext)s"
-  | "%(upload_date)s - %(uploader)s - %(title)s [%(duration)s].%(ext)s"
-  | string; // Allow custom templates
+// Output template options - allows any string for custom templates
+export type OutputTemplate = string;
