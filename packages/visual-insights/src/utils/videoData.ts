@@ -1,5 +1,4 @@
 import { success, type WithError } from "shared";
-import { downloadDataFromVideo, type YtDlpVideoOptions } from "../download.js";
 import { transcribe } from "../whisper/transcribe.js";
 import type { WhisperOptions } from "../whisper/whisperTypes.js";
 import { extractMetadata, type VideoMetadata } from "../ytdlp/metadata.js";
@@ -9,14 +8,21 @@ import type {
   YtDlpYoutubeMetadaKeys,
   YtDlpYoutubeMetadata,
 } from "../ytdlp/ytdlpTypes.js";
-import { withTempDir } from "./tempFolder.js";
+
+export type GetVideoDataOptions<
+  K extends readonly YtDlpYoutubeMetadaKeys[] | readonly YtDlpInstagramMetadataKeys[],
+> = {
+  readonly metadata?: VideoMetadata & { metadata: K };
+  readonly whisperOptions?: Omit<WhisperOptions, "audioPath" | "outputDir">;
+};
 
 export function getVideoData<K extends readonly YtDlpYoutubeMetadaKeys[]>(
-  videoLink: string,
+  videoPath: string,
+  metadataPath: string,
+  outputDir: string,
   options: {
     metadata: { type: "youtube"; metadata: K };
-    whisperOptions?: Omit<WhisperOptions, "audioPath">;
-    ytdlpOptions?: YtDlpVideoOptions;
+    whisperOptions?: Omit<WhisperOptions, "audioPath" | "outputDir">;
   },
 ): Promise<
   WithError<
@@ -29,11 +35,12 @@ export function getVideoData<K extends readonly YtDlpYoutubeMetadaKeys[]>(
 >;
 
 export function getVideoData<K extends readonly YtDlpInstagramMetadataKeys[]>(
-  videoLink: string,
+  videoPath: string,
+  metadataPath: string,
+  outputDir: string,
   options: {
     metadata: { type: "instagram"; metadata: K };
-    whisperOptions?: Omit<WhisperOptions, "audioPath">;
-    ytdlpOptions?: YtDlpVideoOptions;
+    whisperOptions?: Omit<WhisperOptions, "audioPath" | "outputDir">;
   },
 ): Promise<
   WithError<
@@ -46,10 +53,11 @@ export function getVideoData<K extends readonly YtDlpInstagramMetadataKeys[]>(
 >;
 
 export function getVideoData(
-  videoLink: string,
+  videoPath: string,
+  metadataPath: string,
+  outputDir: string,
   options?: {
-    whisperOptions?: Omit<WhisperOptions, "audioPath">;
-    ytdlpOptions?: YtDlpVideoOptions;
+    whisperOptions?: Omit<WhisperOptions, "audioPath" | "outputDir">;
   },
 ): Promise<
   WithError<
@@ -61,48 +69,36 @@ export function getVideoData(
   >
 >;
 
-export function getVideoData(
-  videoLink: string,
+export async function getVideoData(
+  videoPath: string,
+  metadataPath: string,
+  outputDir: string,
   options?: {
     metadata?: VideoMetadata;
-    whisperOptions?: Omit<WhisperOptions, "audioPath">;
-    ytdlpOptions?: YtDlpVideoOptions;
+    whisperOptions?: Omit<WhisperOptions, "audioPath" | "outputDir">;
   },
 ) {
-  return withTempDir(async (tmpDir) => {
-    const downloadResult = await downloadDataFromVideo(videoLink, tmpDir, {
-      ...options?.ytdlpOptions,
-      metadata: true,
-    });
-
-    if (!downloadResult.success) {
-      return downloadResult;
-    }
-
-    const { videoFilePath, metadataFilePath } = downloadResult.result;
-
-    const transcriptionResult = await transcribe(videoFilePath, tmpDir, {
-      ...options?.whisperOptions,
-      outputDir: tmpDir,
-    });
-
-    if (!transcriptionResult.success) {
-      return transcriptionResult;
-    }
-
-    const metadataResult = await (options?.metadata
-      ? options.metadata.type === "youtube"
-        ? extractMetadata(metadataFilePath, options.metadata)
-        : extractMetadata(metadataFilePath, options.metadata)
-      : extractMetadata(metadataFilePath, {
-          type: "youtube" as const,
-          metadata: ["description"] as const,
-        }));
-
-    if (!metadataResult.success) {
-      return metadataResult;
-    }
-
-    return success({ transcription: transcriptionResult.result, metadata: metadataResult.result });
+  const transcriptionResult = await transcribe(videoPath, outputDir, {
+    ...options?.whisperOptions,
+    outputDir,
   });
+
+  if (!transcriptionResult.success) {
+    return transcriptionResult;
+  }
+
+  const metadataResult = await (options?.metadata
+    ? options.metadata.type === "youtube"
+      ? extractMetadata(metadataPath, options.metadata)
+      : extractMetadata(metadataPath, options.metadata)
+    : extractMetadata(metadataPath, {
+        type: "youtube" as const,
+        metadata: ["description"] as const,
+      }));
+
+  if (!metadataResult.success) {
+    return metadataResult;
+  }
+
+  return success({ transcription: transcriptionResult.result, metadata: metadataResult.result });
 }

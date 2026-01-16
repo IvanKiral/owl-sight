@@ -29,7 +29,7 @@ export const downloadDataFromVideo = async (
     await runYtDlp(url, ytdlArgs as string[]);
     return success({
       videoFilePath: outTemplate,
-      metadataFilePath: path.join(dirPath, `video.${extension}.info.json`),
+      metadataFilePath: path.join(dirPath, `video.info.json`),
     });
   } catch (e) {
     return error(`Failed to download video: ${e instanceof Error ? e.message : String(e)}`);
