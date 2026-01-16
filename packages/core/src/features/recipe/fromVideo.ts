@@ -4,6 +4,7 @@ import {
   type CookieConfig,
   downloadDataFromVideo,
   getVideoData,
+  type TimeRange,
   type WhisperLanguage,
   type WhisperLanguageName,
   withTempDir,
@@ -29,6 +30,7 @@ export type RecipeFromVideoOptions = {
   readonly videoLanguage?: WhisperLanguage;
   readonly cookies?: CookieConfig;
   readonly archive?: ArchiveConfig;
+  readonly timeRange?: TimeRange;
 };
 
 export type RecipeResult = {
@@ -48,6 +50,7 @@ export const recipeFromVideo = (
       quiet: true,
       cookies: options.cookies,
       metadata: true,
+      downloadSection: options.timeRange,
     });
 
     if (!downloadResult.success) {
@@ -106,7 +109,7 @@ export const recipeFromVideo = (
     }
 
     const { include, filename } = options.archive;
-    const videoName = filename ? `${filename}.mkv` : "video.mkv";
+    const videoName = filename ? `${filename}.mp4` : "video.mp4";
     const resultName = filename ? `${filename}.${recipeExtension}` : `recipe.${recipeExtension}`;
     const entries: ReadonlyArray<ArchiveEntry> = [
       include.includes("video") && { name: videoName, filePath: videoFilePath },

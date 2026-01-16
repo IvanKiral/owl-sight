@@ -1,4 +1,5 @@
 import { createCookieConfig, type OutputFormat, recipeFromVideo } from "core";
+import { parseTimeRange } from "../../lib/timeRange.js";
 import {
   getLanguageName,
   KEYRINGS,
@@ -32,6 +33,7 @@ type VideoRecipeOptions = {
   output: string;
   outputFormat?: OutputFormat;
   llmModel?: UserFacingModel;
+  timeRange?: string;
 };
 
 export const videoCommand: CommandModule<Record<string, unknown>, VideoRecipeOptions> = {
@@ -85,6 +87,11 @@ export const videoCommand: CommandModule<Record<string, unknown>, VideoRecipeOpt
             alias: "f",
             conflicts: ["cookies-from-browser", "browser-profile", "keyring"],
           })
+          .option("time-range", {
+            describe: "Time range to extract (START:END in seconds). Examples: 20:30, :30, 30:",
+            type: "string",
+            alias: "t",
+          })
           .example(
             "$0 recipe video https://youtube.com/watch?v=example",
             "Summarize recipe from YouTube video",
@@ -108,6 +115,10 @@ export const videoCommand: CommandModule<Record<string, unknown>, VideoRecipeOpt
           .example(
             "$0 recipe video https://youtube.com/watch?v=example -c firefox -p Work",
             "Use Firefox Work profile cookies",
+          )
+          .example(
+            "$0 recipe video https://youtube.com/watch?v=example -t 30:120",
+            "Extract only from 30 to 120 seconds",
           ),
       yargsWithRecipeSchema,
       yargsWithOutput,
@@ -133,6 +144,12 @@ export const videoCommand: CommandModule<Record<string, unknown>, VideoRecipeOpt
       process.exit(1);
     }
 
+    const timeRange = argv.timeRange ? parseTimeRange(argv.timeRange) : undefined;
+    if (timeRange && !timeRange.success) {
+      console.error("Error parsing time range:", timeRange.error);
+      process.exit(1);
+    }
+
     console.log("Downloading and transcribing video...");
 
     const result = await recipeFromVideo({
@@ -144,6 +161,7 @@ export const videoCommand: CommandModule<Record<string, unknown>, VideoRecipeOpt
       outputLanguage: getLanguageName(argv.outputLanguage ?? "en"),
       videoLanguage: argv.videoLanguage,
       cookies: createCookieConfig(argv),
+      timeRange: timeRange?.result,
     });
 
     if (!result.success) {

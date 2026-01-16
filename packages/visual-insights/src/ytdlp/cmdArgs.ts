@@ -21,6 +21,11 @@ export const KEYRINGS = ["basictext", "gnomekeyring", "kwallet", "kwallet5", "kw
 
 export type Keyring = (typeof KEYRINGS)[number];
 
+export type TimeRange = {
+  readonly start?: number;
+  readonly end?: number;
+};
+
 export type CookieConfig =
   | {
       type: "browser";
@@ -50,6 +55,7 @@ export type VideoExtractionArgs = CommonExtractionArgs & {
   quality?: VideoQualityOptions;
   format?: string;
   mergeOutputFormat?: MergeOutputFormat;
+  downloadSection?: TimeRange;
 };
 
 const createCookieArgs = (cookies?: CookieConfig): ReadonlyArray<string> => {
@@ -107,10 +113,19 @@ export const buildVideoFormatString = (quality: VideoQualityOptions): string => 
   // 2. Fallback codec video + preferred audio codec
   // 3. Any best available format
   return [
-    `bv*[height<=${height}][fps<=${fps}][vcodec^=${vcodec}]`,
+    `bv*[height<=${height}][fps<=${fps}][vcodec^=${vcodec}]+ba`,
     `bv*[height<=${height}][fps<=${fps}][vcodec^=${fallbackCodec}]+ba[acodec^=${acodec}]`,
     "best",
   ].join("/");
+};
+
+const createDownloadSectionArg = (section?: TimeRange): ReadonlyArray<string> => {
+  if (!section) {
+    return [];
+  }
+  const start = section.start ?? 0;
+  const end = section.end ?? "inf";
+  return ["--download-sections", `*${start}-${end}`];
 };
 
 export const createYtDlpExtractVideoArgs = (
@@ -126,6 +141,8 @@ export const createYtDlpExtractVideoArgs = (
 
     "--restrict-filenames",
     "--no-playlist",
+
+    ...createDownloadSectionArg(options.downloadSection),
 
     ...(options.verbose !== undefined ? ["--verbose", options.verbose ? "True" : "False"] : []),
     ...(options.quiet ? ["--quiet"] : []),
