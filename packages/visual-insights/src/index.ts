@@ -7,6 +7,7 @@ export type {
   WebpageOptions,
   WebpageResult,
 } from "./html/webpageTypes.js";
+export { withTempDir } from "./utils/tempFolder.js";
 export { getVideoData } from "./utils/videoData.js";
 export * from "./whisper/transcribe.js";
 export {
@@ -22,4 +23,4 @@ export {
   SUPPORTED_BROWSERS,
   type SupportedBrowser,
 } from "./ytdlp/cmdArgs.js";
-export { extractMetadata } from "./ytdlp/metadata.js";
+export { extractMetadata, type VideoMetadata } from "./ytdlp/metadata.js";
