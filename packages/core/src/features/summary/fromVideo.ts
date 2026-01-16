@@ -94,15 +94,17 @@ export const summaryFromVideo = (
       });
     }
 
-    const { include } = options.archive;
+    const { include, filename } = options.archive;
+    const videoName = filename ? `${filename}.mkv` : "video.mkv";
+    const resultName = filename ? `${filename}.txt` : "summary.txt";
     const entries: ReadonlyArray<ArchiveEntry> = [
-      include.includes("video") && { name: "video.mkv", filePath: videoFilePath },
+      include.includes("video") && { name: videoName, filePath: videoFilePath },
       include.includes("transcription") && {
         name: "transcription.txt",
         content: videoResult.result.transcription,
       },
       include.includes("metadata") && { name: "metadata.json", filePath: metadataFilePath },
-      include.includes("result") && { name: "summary.txt", content: summaryContent },
+      include.includes("result") && { name: resultName, content: summaryContent },
     ].filter((e): e is ArchiveEntry => Boolean(e));
 
     const archiveResult = await createArchive({

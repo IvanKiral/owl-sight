@@ -73,6 +73,7 @@ export const recipeFromVideo = (
       data: {
         transcribedText: videoResult.result.transcription,
         description: videoResult.result.metadata.description ?? "",
+        filename: options.archive?.filename,
       },
       language: options.outputLanguage,
       schema: options.schema,
@@ -104,16 +105,18 @@ export const recipeFromVideo = (
       });
     }
 
-    const { include } = options.archive;
+    const { include, filename } = options.archive;
+    const videoName = filename ? `${filename}.mkv` : "video.mkv";
+    const resultName = filename ? `${filename}.${recipeExtension}` : `recipe.${recipeExtension}`;
     const entries: ReadonlyArray<ArchiveEntry> = [
-      include.includes("video") && { name: "video.mkv", filePath: videoFilePath },
+      include.includes("video") && { name: videoName, filePath: videoFilePath },
       include.includes("transcription") && {
         name: "transcription.txt",
         content: videoResult.result.transcription,
       },
       include.includes("metadata") && { name: "metadata.json", filePath: metadataFilePath },
       include.includes("result") && {
-        name: `recipe.${recipeExtension}`,
+        name: resultName,
         content: serializeRecipeContent(resultWithUrl),
       },
     ].filter((e): e is ArchiveEntry => Boolean(e));

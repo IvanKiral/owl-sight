@@ -70,9 +70,10 @@ export const extractFromVideo = (
       });
     }
 
-    const { include } = options.archive;
+    const { include, filename } = options.archive;
+    const videoName = filename ? `${filename}.mkv` : "video.mkv";
     const entries: ReadonlyArray<ArchiveEntry> = [
-      include.includes("video") && { name: "video.mkv", filePath: videoFilePath },
+      include.includes("video") && { name: videoName, filePath: videoFilePath },
       include.includes("transcription") &&
         transcription && { name: "transcription.txt", content: transcription },
       include.includes("metadata") && { name: "metadata.json", filePath: metadataFilePath },
