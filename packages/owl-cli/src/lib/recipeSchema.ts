@@ -1,11 +1,11 @@
 import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import path from "node:path";
-import { compileFromFile } from "json-schema-to-typescript";
+import { compileRecipeSchema, DEFAULT_RECIPE_SCHEMA } from "core";
+import type { JSONSchema } from "json-schema-to-typescript";
 import { error, success, type WithError } from "shared";
 import { match } from "ts-pattern";
 import { APP_NAME, SCHEMA_FILENAME } from "./constants/app.js";
-import { DEFAULT_RECIPE_SCHEMA } from "./constants/defaultRecipeSchema.js";
 
 const getUserConfigDirectory = () => {
   const platform = process.platform;
@@ -28,9 +28,9 @@ const getUserConfigDirectory = () => {
     });
 };
 
-const fileExists = async (path: string): Promise<WithError<boolean, string>> => {
+const fileExists = async (filePath: string): Promise<WithError<boolean, string>> => {
   try {
-    await fs.stat(path);
+    await fs.stat(filePath);
     return success(true);
   } catch (err) {
     if (err instanceof Error && err.message.includes("ENOENT")) {
@@ -40,6 +40,11 @@ const fileExists = async (path: string): Promise<WithError<boolean, string>> => 
       `Failed to check file existence: ${err instanceof Error ? err.message : String(err)}`,
     );
   }
+};
+
+const readJsonSchema = async (filePath: string): Promise<JSONSchema> => {
+  const content = await fs.readFile(filePath, "utf8");
+  return JSON.parse(content) as JSONSchema;
 };
 
 export const userRecipeConfigSchemaPath = path.join(getUserConfigDirectory(), SCHEMA_FILENAME);
@@ -65,7 +70,8 @@ export const resolveDefaultRecipeSchema = async (): Promise<
       );
     }
 
-    const schema = await compileFromFile(userRecipeConfigSchemaPath);
+    const jsonSchema = await readJsonSchema(userRecipeConfigSchemaPath);
+    const schema = await compileRecipeSchema(jsonSchema);
     return success({ path: userRecipeConfigSchemaPath, schema });
   } catch (err) {
     return error(

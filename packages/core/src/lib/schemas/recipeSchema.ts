@@ -1,4 +1,4 @@
-import type { JSONSchema } from "json-schema-to-typescript";
+import { compile, type JSONSchema } from "json-schema-to-typescript";
 
 export const DEFAULT_RECIPE_SCHEMA = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
@@ -80,3 +80,6 @@ export const DEFAULT_RECIPE_SCHEMA = {
   required: ["title", "ingredients", "instructions"],
   additionalProperties: false,
 } as const satisfies JSONSchema;
+
+export const compileRecipeSchema = (schema: JSONSchema): Promise<string> =>
+  compile(schema, schema.title ?? "Schema");
