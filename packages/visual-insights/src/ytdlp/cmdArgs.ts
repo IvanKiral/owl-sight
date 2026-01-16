@@ -122,7 +122,7 @@ export const createYtDlpExtractVideoArgs = (
     "-f",
     formatString,
     "--merge-output-format",
-    options.mergeOutputFormat ?? "mkv",
+    options.mergeOutputFormat ?? "mp4",
 
     "--restrict-filenames",
     "--no-playlist",
