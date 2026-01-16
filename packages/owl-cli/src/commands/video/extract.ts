@@ -1,6 +1,5 @@
-import { createCookieConfig } from "core";
+import { createCookieConfig, type ExtractType, extractFromVideo } from "core";
 import {
-  getVideoData,
   KEYRINGS,
   type Keyring,
   SUPPORTED_BROWSERS,
@@ -9,8 +8,6 @@ import {
   type WhisperLanguage,
 } from "visual-insights";
 import type { CommandModule } from "yargs";
-
-type ExtractType = "description" | "transcription";
 
 type VideoExtractOptions = Readonly<{
   url: string;
@@ -100,21 +97,17 @@ export const extractCommand: CommandModule<{}, VideoExtractOptions> = {
   handler: async (argv) => {
     console.log("🎬 Processing video:", argv.url);
 
-    // Determine what to extract - default to both if not specified
     const extractTypes = argv.extractType?.length
       ? argv.extractType
-      : ["description", "transcription"];
+      : (["description", "transcription"] as const);
 
     console.log(`📋 Extracting: ${extractTypes.join(", ")}`);
 
-    const result = await getVideoData(argv.url, {
-      ytdlpOptions: {
-        cookies: createCookieConfig(argv),
-      },
-      whisperOptions: {
-        model: "turbo",
-        ...(argv.videoLanguage && { language: argv.videoLanguage }),
-      },
+    const result = await extractFromVideo({
+      url: argv.url,
+      videoLanguage: argv.videoLanguage,
+      cookies: createCookieConfig(argv),
+      extractTypes,
     });
 
     if (!result.success) {
@@ -124,10 +117,9 @@ export const extractCommand: CommandModule<{}, VideoExtractOptions> = {
 
     console.log("✅ Video processed successfully");
 
-    // Build the output object
     const output = {
-      description: result.result.metadata.description ?? undefined,
-      transcription: result.result.transcription,
+      description: result.result.description ?? undefined,
+      transcription: result.result.transcription ?? undefined,
     };
 
     console.log("\n=== EXTRACTED DATA ===");

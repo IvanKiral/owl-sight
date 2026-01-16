@@ -1,7 +1,5 @@
-import { addUrlToResponse, callGemini, createCookieConfig, deserializeGeminiResponse } from "core";
+import { createCookieConfig, summaryFromVideo } from "core";
 import {
-  getLanguageName,
-  getVideoData,
   KEYRINGS,
   type Keyring,
   SUPPORTED_BROWSERS,
@@ -11,7 +9,6 @@ import {
 } from "visual-insights";
 import type { CommandModule } from "yargs";
 import { getGeminiApiKey } from "../../lib/gemini/geminiKey.js";
-import { createSummaryPrompt } from "../../lib/prompts/summaryPrompt.js";
 import { compose } from "../helpers/commandOptionsComposer.js";
 import { yargsWithCustomPrompt } from "../helpers/withCustomPrompt.js";
 import {
@@ -118,69 +115,33 @@ export const videoCommand: CommandModule<Record<string, unknown>, VideoSummaryOp
   handler: async (argv) => {
     console.log("📹 Processing video:", argv.url);
 
-    const result = await getVideoData(argv.url, {
-      ytdlpOptions: {
-        quiet: true,
-        cookies: createCookieConfig(argv),
-      },
-      whisperOptions: {
-        verbose: "False",
-        model: "turbo",
-        ...(argv.videoLanguage && { language: argv.videoLanguage }),
-      },
-    });
-
-    if (!result.success) {
-      console.error("Error processing video:", result.error);
-      process.exit(1);
-    }
-
-    console.log("✅ Video transcribed successfully");
-
-    const prompt = createSummaryPrompt({
-      data: {
-        transcribedText: result.result.transcription,
-        description: result.result.metadata.description ?? "",
-      },
-      language: getLanguageName(argv.outputLanguage ?? "en"),
-      customPrompt: argv.customPrompt,
-    });
-
     const apiKeyResult = await getGeminiApiKey();
     if (!apiKeyResult.success) {
       console.error("Error getting Gemini API key:", apiKeyResult.error);
       process.exit(1);
     }
 
-    console.log("Generating summary...");
-    const geminiResult = await callGemini(
-      apiKeyResult.result,
-      mapToApiModel(argv.llmModel ?? "gemini-flash-lite"),
-      prompt,
-    );
+    console.log("Transcribing and generating summary...");
+    const result = await summaryFromVideo({
+      url: argv.url,
+      apiKey: apiKeyResult.result,
+      model: mapToApiModel(argv.llmModel ?? "gemini-flash-lite"),
+      outputLanguage: argv.outputLanguage ?? "en",
+      videoLanguage: argv.videoLanguage,
+      cookies: createCookieConfig(argv),
+      customPrompt: argv.customPrompt,
+    });
 
-    if (!geminiResult.success) {
-      console.error("Error calling Gemini API:", geminiResult.error);
+    if (!result.success) {
+      console.error("Error:", result.error);
       process.exit(1);
     }
 
     console.log("✨ Summary generated successfully!");
-    try {
-      const deserializedResult = deserializeGeminiResponse(geminiResult.result.text, "markdown");
-      if (!deserializedResult.success) {
-        throw new Error(deserializedResult.error);
-      }
 
-      const resultWithUrl = addUrlToResponse(deserializedResult.result, argv.url);
-      const outputString = resultWithUrl.parsed as string;
-
-      const outputResult = handleOutput(argv.output, outputString);
-      if (!outputResult.success) {
-        throw new Error(outputResult.error);
-      }
-    } catch (parseError) {
-      console.log("Raw response (error processing):", parseError);
-      console.log(geminiResult.result.text);
+    const outputResult = handleOutput(argv.output, result.result.content);
+    if (!outputResult.success) {
+      console.error("Error writing output:", outputResult.error);
       process.exit(1);
     }
 

@@ -1,10 +1,5 @@
-import { addUrlToResponse, callGemini, deserializeGeminiResponse, type OutputFormat } from "core";
-import {
-  getLanguageName,
-  getWebpageData,
-  WHISPER_LANGUAGES,
-  type WhisperLanguage,
-} from "visual-insights";
+import { type OutputFormat, recipeFromHtml } from "core";
+import { WHISPER_LANGUAGES, type WhisperLanguage } from "visual-insights";
 import type { CommandModule } from "yargs";
 import { getGeminiApiKey } from "../../lib/gemini/geminiKey.js";
 import { compose } from "../helpers/commandOptionsComposer.js";
@@ -15,7 +10,7 @@ import {
 } from "../helpers/withLlmModelSchema.js";
 import { handleOutput, yargsWithOutput } from "../helpers/withOutput.js";
 import { yargsWithOutputFormat } from "../helpers/withOutputFormat.js";
-import { handleRecipePrompt, yargsWithRecipeSchema } from "../helpers/withRecipeSchema.js";
+import { getRecipeSchema, yargsWithRecipeSchema } from "../helpers/withRecipeSchema.js";
 
 type HtmlRecipeOptions = {
   url: string;
@@ -67,68 +62,43 @@ export const htmlCommand: CommandModule<Record<string, unknown>, HtmlRecipeOptio
 
     const outputFormat = argv.outputFormat ?? "json";
 
-    const result = await getWebpageData(argv.url);
-
-    if (!result.success) {
-      console.error("Error processing webpage:", result.error);
-      process.exit(1);
-    }
-
-    console.log("✅ Webpage content extracted successfully");
-
     const apiKeyResult = await getGeminiApiKey();
     if (!apiKeyResult.success) {
       console.error("Error getting Gemini API key:", apiKeyResult.error);
       process.exit(1);
     }
 
-    const promptResult = await handleRecipePrompt({
-      recipeSchemaPath: argv.recipeSchema,
-      data: {
-        webpageContent: result.result.textContent,
-        articleTitle: result.result.metadata.title,
-      },
-      outputLanguage: getLanguageName(argv.outputLanguage ?? "en"),
-      format: outputFormat,
-    });
-
-    if (!promptResult.success) {
-      console.error("Error creating recipe prompt:", promptResult.error);
+    const schemaResult = await getRecipeSchema(outputFormat, argv.recipeSchema);
+    if (!schemaResult.success) {
+      console.error("Error getting recipe schema:", schemaResult.error);
       process.exit(1);
     }
 
-    console.log("Generating recipe...");
-    const geminiResult = await callGemini(
-      apiKeyResult.result,
-      mapToApiModel(argv.llmModel ?? "gemini-flash-lite"),
-      promptResult.result,
-    );
+    console.log("Fetching content and generating recipe...");
+    const result = await recipeFromHtml({
+      url: argv.url,
+      apiKey: apiKeyResult.result,
+      model: mapToApiModel(argv.llmModel ?? "gemini-flash-lite"),
+      schema: schemaResult.result,
+      outputFormat,
+      outputLanguage: argv.outputLanguage ?? "en",
+    });
 
-    if (!geminiResult.success) {
-      console.error("Error calling Gemini API:", geminiResult.error);
+    if (!result.success) {
+      console.error("Error:", result.error);
       process.exit(1);
     }
 
     console.log("✨ Recipe generated successfully!");
-    try {
-      const deserializedResult = deserializeGeminiResponse(geminiResult.result.text, outputFormat);
-      if (!deserializedResult.success) {
-        throw new Error(deserializedResult.error);
-      }
 
-      const resultWithUrl = addUrlToResponse(deserializedResult.result, argv.url);
-      const outputString =
-        resultWithUrl.format === "json"
-          ? JSON.stringify(resultWithUrl.parsed, null, 2)
-          : resultWithUrl.parsed;
+    const outputString =
+      result.result.content.format === "json"
+        ? JSON.stringify(result.result.content.parsed, null, 2)
+        : result.result.content.parsed;
 
-      const outputResult = handleOutput(argv.output, outputString);
-      if (!outputResult.success) {
-        throw new Error(outputResult.error);
-      }
-    } catch (parseError) {
-      console.log("Raw response (could not parse as JSON):", parseError);
-      console.log(geminiResult.result.text);
+    const outputResult = handleOutput(argv.output, outputString);
+    if (!outputResult.success) {
+      console.error("Error writing output:", outputResult.error);
       process.exit(1);
     }
 
