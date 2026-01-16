@@ -19,7 +19,14 @@ export {
   summaryFromHtml,
   summaryFromVideo,
 } from "./features/summary/index.js";
-// Config
+export type { ArchiveConfig, ArchiveInclude } from "./features/types.js";
+export {
+  type ArchiveContentEntry,
+  type ArchiveEntry,
+  type ArchiveFileEntry,
+  type CreateArchiveOptions,
+  createArchive,
+} from "./lib/archive/createArchive.js";
 export {
   type CookieConfigOptions,
   createCookieConfig,
