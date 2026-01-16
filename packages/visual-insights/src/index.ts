@@ -22,5 +22,6 @@ export {
   type Keyring,
   SUPPORTED_BROWSERS,
   type SupportedBrowser,
+  type TimeRange,
 } from "./ytdlp/cmdArgs.js";
 export { extractMetadata, type VideoMetadata } from "./ytdlp/metadata.js";

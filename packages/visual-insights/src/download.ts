@@ -4,7 +4,10 @@ import { createYtDlpExtractVideoArgs, type VideoExtractionArgs } from "./ytdlp/c
 import { runYtDlp } from "./ytdlp/runYtdlp.js";
 
 export type YtDlpVideoOptions = Partial<
-  Pick<VideoExtractionArgs, "quality" | "format" | "mergeOutputFormat" | "quiet" | "cookies">
+  Pick<
+    VideoExtractionArgs,
+    "quality" | "format" | "mergeOutputFormat" | "quiet" | "cookies" | "downloadSection"
+  >
 >;
 
 export const downloadDataFromVideo = async (
@@ -22,6 +25,7 @@ export const downloadDataFromVideo = async (
     writeInfoJson: options?.metadata ?? true,
     quiet: options?.quiet ?? false,
     cookies: options?.cookies,
+    downloadSection: options?.downloadSection,
   });
 
   try {
