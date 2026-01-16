@@ -12,8 +12,7 @@ export const downloadDataFromVideo = async (
   dirPath: string,
   options?: YtDlpVideoOptions & { metadata?: boolean },
 ): Promise<WithError<{ videoFilePath: string; metadataFilePath: string }, string>> => {
-  const extension = options?.mergeOutputFormat ?? "mkv";
-  const outTemplate = path.join(dirPath, `video.${extension}`);
+  const outTemplate = path.join(dirPath, `video.%(ext)s`);
 
   const ytdlArgs = createYtDlpExtractVideoArgs({
     quality: options?.quality,
@@ -28,7 +27,7 @@ export const downloadDataFromVideo = async (
   try {
     await runYtDlp(url, ytdlArgs as string[]);
     return success({
-      videoFilePath: outTemplate,
+      videoFilePath: path.join(dirPath, `video.mp4`),
       metadataFilePath: path.join(dirPath, `video.info.json`),
     });
   } catch (e) {
