@@ -5,6 +5,7 @@ export type RecipePromptData =
   | {
       description: string;
       transcribedText: string;
+      filename?: string;
     }
   | {
       webpageContent: string;
@@ -25,9 +26,9 @@ ${JSON.stringify(options.data, null, 2)}
 If any information is not available, use null for that field.
 Focus on extracting clear, actionable recipe information.
 Return only valid ${options.format}, no additional text or formatting.
-Please translate it to ${options.language} language.
-
-Please extract and structure this information into ${options.format} with the strictly following format. Add only values specified in the schema:
+Translate it to ${options.language} language. Translate with natural phrasing in the target language. Preserve meaning, tone, and intent, not literal wording
+${"filename" in options.data && options.data.filename ? `The source filename is "${options.data.filename}" - if it makes sense, use this as a hint for the recipe title and component names.` : ""}
+Extract and structure this information into ${options.format} with the strictly following format. Add only values specified in the schema:
 ${options.schema}
 `;
 

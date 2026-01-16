@@ -44,8 +44,23 @@ export const DEFAULT_RECIPE_SCHEMA = {
     },
     instructions: {
       type: "array",
-      description: "Step-by-step instructions",
-      items: { type: "string" },
+      description: "List of recipe components with their instructions",
+      items: {
+        type: "object",
+        properties: {
+          name: {
+            type: "string",
+            description: "Component name (e.g., 'Tzatziki Sauce', 'Main Dish')",
+          },
+          steps: {
+            type: "array",
+            description: "Step-by-step instructions for this component",
+            items: { type: "string" },
+            minItems: 1,
+          },
+        },
+        required: ["name", "steps"],
+      },
       minItems: 1,
     },
     tags: {
