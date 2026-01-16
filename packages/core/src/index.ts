@@ -44,3 +44,7 @@ export {
   type SummaryPromptOptions,
   type SummaryPromptVideoData,
 } from "./lib/prompts/summaryPrompt.js";
+export {
+  compileRecipeSchema,
+  DEFAULT_RECIPE_SCHEMA,
+} from "./lib/schemas/recipeSchema.js";
