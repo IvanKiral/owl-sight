@@ -10,6 +10,8 @@ import { basename, extname, join } from "node:path";
 import { pipeline } from "node:stream/promises";
 import { compileRecipeSchema, DEFAULT_RECIPE_SCHEMA, recipeFromVideo } from "core";
 import unzipper from "unzipper";
+import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
 import { isVideoConfig, parseInputFile } from "./lib/parseInputFile.js";
 import type { ProcessingError, ProcessingResult, VideoConfig } from "./lib/types.js";
 
@@ -17,47 +19,6 @@ const MODEL = "gemini-3-flash-preview";
 const DELAY_BETWEEN_VIDEOS_MS = 15_000;
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
-
-type CliArgs = {
-  inputFile: string;
-  outputDir: string;
-  rangeStr: string | null;
-};
-
-const DEFAULT_ARGS: CliArgs = {
-  inputFile: "",
-  outputDir: "./output",
-  rangeStr: null,
-};
-
-type ParseState = CliArgs & { skip: number };
-
-const parseArgs = (args: ReadonlyArray<string>): CliArgs => {
-  const initial: ParseState = { ...DEFAULT_ARGS, skip: 0 };
-
-  const result = args.reduce<ParseState>((acc, arg, i) => {
-    if (acc.skip > 0) {
-      return { ...acc, skip: acc.skip - 1 };
-    }
-
-    if (arg === "--range" || arg === "-r") {
-      return { ...acc, rangeStr: args[i + 1] ?? null, skip: 1 };
-    }
-
-    if (arg === "--output" || arg === "-o") {
-      return { ...acc, outputDir: args[i + 1] ?? "./output", skip: 1 };
-    }
-
-    if (!acc.inputFile) {
-      return { ...acc, inputFile: arg };
-    }
-
-    return acc;
-  }, initial);
-
-  const { skip, ...cliArgs } = result;
-  return cliArgs;
-};
 
 type Range = { start: number; end: number };
 
@@ -223,7 +184,9 @@ const processVideos = async (
     index: number,
     acc: ProcessingAcc,
   ): Promise<ProcessingAcc> => {
-    if (remaining.length === 0) return acc;
+    if (remaining.length === 0) {
+      return acc;
+    }
 
     const [config, ...rest] = remaining;
 
@@ -257,29 +220,35 @@ const processVideos = async (
   };
 };
 
-const printUsage = () => {
-  console.error("Usage: tsx bulk-recipe-processor.ts <input.txt> [options]");
-  console.error("");
-  console.error("Options:");
-  console.error("  -o, --output <dir>   Output directory (default: ./output)");
-  console.error("  -r, --range <range>  Process subset of recipes (1-indexed)");
-  console.error("                       Examples: 5-10, 5:, :10, 5");
-  console.error("");
-  console.error("Input file format (semicolon-separated):");
-  console.error("  video_url;filename;video_lang;output_lang;time_range");
-  console.error("");
-  console.error("Examples:");
-  console.error("  tsx bulk-recipe-processor.ts recipes.txt");
-  console.error("  tsx bulk-recipe-processor.ts recipes.txt -o ./my-output");
-  console.error("  tsx bulk-recipe-processor.ts recipes.txt --range 5-10");
-  console.error("  tsx bulk-recipe-processor.ts recipes.txt -r 5: -o ./output");
-};
-
 const main = async () => {
-  const { inputFile, outputDir, rangeStr } = parseArgs(process.argv.slice(2));
+  const argv = await yargs(hideBin(process.argv))
+    .scriptName("bulk-recipe")
+    .usage("$0 <input-file> [options]")
+    .positional("input-file", {
+      describe: "Path to input file (txt or zip)",
+      type: "string",
+      demandOption: true,
+    })
+    .option("range", {
+      alias: "r",
+      describe: "Range of videos to process (e.g., 1-10, 5:, :3)",
+      type: "string",
+    })
+    .option("output", {
+      alias: "o",
+      describe: "Output directory",
+      type: "string",
+      default: "./output",
+    })
+    .help()
+    .parse();
+
+  const inputFile = argv._[0] as string;
+  const outputDir = argv.output;
+  const rangeStr = argv.range ?? null;
 
   if (!inputFile) {
-    printUsage();
+    console.error("Error: input file is required");
     process.exit(1);
   }
 

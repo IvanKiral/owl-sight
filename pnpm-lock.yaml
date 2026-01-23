@@ -106,6 +106,9 @@ importers:
 
   packages/scripts:
     dependencies:
+      '@types/yargs':
+        specifier: ^17.0.33
+        version: 17.0.33
       core:
         specifier: workspace:*
         version: link:../core
@@ -115,6 +118,9 @@ importers:
       visual-insights:
         specifier: workspace:*
         version: link:../visual-insights
+      yargs:
+        specifier: ^18.0.0
+        version: 18.0.0
       zod:
         specifier: ^3.25.30
         version: 3.25.76

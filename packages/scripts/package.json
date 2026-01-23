@@ -8,9 +8,11 @@
     "bulk-recipe": "tsx src/bulk-recipe-processor.ts"
   },
   "dependencies": {
+    "@types/yargs": "^17.0.33",
     "core": "workspace:*",
     "unzipper": "^0.12.3",
     "visual-insights": "workspace:*",
+    "yargs": "^18.0.0",
     "zod": "^3.25.30"
   },
   "devDependencies": {
