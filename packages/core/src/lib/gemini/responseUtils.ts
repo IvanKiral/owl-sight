@@ -36,3 +36,11 @@ export const addUrlToResponse = (
   output.format === "json"
     ? { format: "json", parsed: { ...output.parsed, source_url: url } }
     : { format: "markdown", parsed: `${output.parsed}\n\nSource Url: ${url}` };
+
+export const addLanguageToResponse = (
+  output: DeserializedGeminiOutput,
+  language: string,
+): DeserializedGeminiOutput =>
+  output.format === "json"
+    ? { format: "json", parsed: { ...output.parsed, original_language: language } }
+    : output;
