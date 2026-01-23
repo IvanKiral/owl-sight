@@ -3,6 +3,7 @@ import { error, success, type WithError } from "shared";
 import {
   type CookieConfig,
   downloadDataFromVideo,
+  getLanguageName,
   getVideoData,
   type TimeRange,
   type WhisperLanguage,
@@ -12,6 +13,7 @@ import {
 import { type ArchiveEntry, createArchive } from "../../lib/archive/createArchive.js";
 import { callGemini } from "../../lib/gemini/gemini.js";
 import {
+  addLanguageToResponse,
   addUrlToResponse,
   type DeserializedGeminiOutput,
   deserializeGeminiResponse,
@@ -99,11 +101,14 @@ export const recipeFromVideo = (
     }
 
     const resultWithUrl = addUrlToResponse(deserializedResult.result, options.url);
+    const resultWithLanguage = options.videoLanguage
+      ? addLanguageToResponse(resultWithUrl, getLanguageName(options.videoLanguage))
+      : resultWithUrl;
     const recipeExtension = options.outputFormat === "json" ? "json" : "txt";
 
     if (!options.archive) {
       return success({
-        content: resultWithUrl,
+        content: resultWithLanguage,
         sourceUrl: options.url,
       });
     }
@@ -120,7 +125,7 @@ export const recipeFromVideo = (
       include.includes("metadata") && { name: "metadata.json", filePath: metadataFilePath },
       include.includes("result") && {
         name: resultName,
-        content: serializeRecipeContent(resultWithUrl),
+        content: serializeRecipeContent(resultWithLanguage),
       },
     ].filter((e): e is ArchiveEntry => Boolean(e));
 
@@ -134,7 +139,7 @@ export const recipeFromVideo = (
     }
 
     return success({
-      content: resultWithUrl,
+      content: resultWithLanguage,
       sourceUrl: options.url,
       archivePath: options.archive.outputPath,
     });
