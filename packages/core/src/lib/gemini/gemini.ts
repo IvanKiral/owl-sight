@@ -2,9 +2,9 @@ import { GoogleGenAI } from "@google/genai";
 import {
   anyOf,
   createRetry,
-  linearBackoff,
   httpStatusRetryable,
   keywordRetryable,
+  linearBackoff,
   type WithError,
 } from "shared";
 
@@ -47,7 +47,6 @@ export const callGemini = (
   return geminiRetry(
     operation,
     undefined,
-    (err) =>
-      `Gemini API error: ${err instanceof Error ? err.message : String(err)}`,
+    (err) => `Gemini API error: ${err instanceof Error ? err.message : String(err)}`,
   );
 };
