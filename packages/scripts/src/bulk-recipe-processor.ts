@@ -3,8 +3,6 @@ import {
   createWriteStream,
   existsSync,
   mkdirSync,
-  readdirSync,
-  renameSync,
   unlinkSync,
   writeFileSync,
 } from "node:fs";
@@ -16,9 +14,75 @@ import { isVideoConfig, parseInputFile } from "./lib/parseInputFile.js";
 import type { ProcessingError, ProcessingResult, VideoConfig } from "./lib/types.js";
 
 const MODEL = "gemini-3-flash-preview";
-const DELAY_BETWEEN_VIDEOS_MS = 10_000;
+const DELAY_BETWEEN_VIDEOS_MS = 15_000;
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+
+type CliArgs = {
+  inputFile: string;
+  outputDir: string;
+  rangeStr: string | null;
+};
+
+const DEFAULT_ARGS: CliArgs = {
+  inputFile: "",
+  outputDir: "./output",
+  rangeStr: null,
+};
+
+type ParseState = CliArgs & { skip: number };
+
+const parseArgs = (args: ReadonlyArray<string>): CliArgs => {
+  const initial: ParseState = { ...DEFAULT_ARGS, skip: 0 };
+
+  const result = args.reduce<ParseState>((acc, arg, i) => {
+    if (acc.skip > 0) {
+      return { ...acc, skip: acc.skip - 1 };
+    }
+
+    if (arg === "--range" || arg === "-r") {
+      return { ...acc, rangeStr: args[i + 1] ?? null, skip: 1 };
+    }
+
+    if (arg === "--output" || arg === "-o") {
+      return { ...acc, outputDir: args[i + 1] ?? "./output", skip: 1 };
+    }
+
+    if (!acc.inputFile) {
+      return { ...acc, inputFile: arg };
+    }
+
+    return acc;
+  }, initial);
+
+  const { skip, ...cliArgs } = result;
+  return cliArgs;
+};
+
+type Range = { start: number; end: number };
+
+const clampRange = (range: Range, total: number): Range => ({
+  start: Math.max(0, range.start),
+  end: Math.min(total, range.end),
+});
+
+const parseRange = (rangeStr: string, total: number): Range => {
+  if (rangeStr.includes("-")) {
+    const [s, e] = rangeStr.split("-").map(Number);
+    return clampRange({ start: s - 1, end: e }, total);
+  }
+
+  if (rangeStr.endsWith(":")) {
+    return clampRange({ start: Number(rangeStr.slice(0, -1)) - 1, end: total }, total);
+  }
+
+  if (rangeStr.startsWith(":")) {
+    return clampRange({ start: 0, end: Number(rangeStr.slice(1)) }, total);
+  }
+
+  const n = Number(rangeStr);
+  return clampRange({ start: n - 1, end: n }, total);
+};
 
 const sanitizeFilename = (name: string): string =>
   name
@@ -71,15 +135,6 @@ const organizeOutput = async (
 
     unlinkSync(zipPath);
   }
-
-  const rootFiles = readdirSync(outputDir);
-  for (const file of rootFiles) {
-    if (extname(file).toLowerCase() === ".json" && file !== "_errors.log") {
-      const srcPath = join(outputDir, file);
-      const destPath = join(recipesDir, file);
-      renameSync(srcPath, destPath);
-    }
-  }
 };
 
 type ProcessVideoResult = {
@@ -110,34 +165,48 @@ const processVideo = async (
     outputLanguage: config.outputLanguage,
     videoLanguage: config.videoLanguage,
     timeRange: config.timeRange,
-    archive: archiveFilename
-      ? { outputPath: outputDir, include: ["video"], filename: archiveFilename }
+    archive: archivePath
+      ? {
+          outputPath: archivePath,
+          include: ["video", "result"],
+          filename: archiveFilename ?? undefined,
+        }
       : undefined,
   });
 
   if (!result.success) {
     console.log(`  Failed: ${result.error}`);
     logError(outputDir, config.url, result.error);
-    return { error: { url: config.url, error: result.error }, archivePath: null };
+    return {
+      error: { url: config.url, error: result.error },
+      archivePath: null,
+    };
   }
 
-  const filename = config.filename
-    ? `${sanitizeFilename(config.filename)}.json`
-    : `recipe-${sanitizeFilename(new URL(config.url).pathname)}-${Date.now()}.json`;
+  if (archivePath) {
+    console.log(`  Archived: ${basename(archivePath)}`);
+  } else {
+    const filename = `recipe-${sanitizeFilename(new URL(config.url).pathname)}-${Date.now()}.json`;
+    const outputPath = join(outputDir, filename);
+    const content =
+      result.result.content.format === "json"
+        ? JSON.stringify(result.result.content.parsed, null, 2)
+        : result.result.content.parsed;
 
-  const outputPath = join(outputDir, filename);
-  const content =
-    result.result.content.format === "json"
-      ? JSON.stringify(result.result.content.parsed, null, 2)
-      : result.result.content.parsed;
-
-  writeFileSync(outputPath, content);
-  console.log(`  Saved: ${filename}`);
+    writeFileSync(outputPath, content);
+    console.log(`  Saved: ${filename}`);
+  }
 
   return { error: null, archivePath };
 };
 
 type ProcessVideosResult = ProcessingResult & {
+  archivePaths: ReadonlyArray<string>;
+};
+
+type ProcessingAcc = {
+  successful: number;
+  errors: ReadonlyArray<ProcessingError>;
   archivePaths: ReadonlyArray<string>;
 };
 
@@ -147,50 +216,70 @@ const processVideos = async (
   apiKey: string,
 ): Promise<ProcessVideosResult> => {
   const schema = await compileRecipeSchema(DEFAULT_RECIPE_SCHEMA);
-  const errors: ProcessingError[] = [];
-  const archivePaths: string[] = [];
-  let successful = 0;
+  const total = configs.length;
 
-  for (const [index, config] of configs.entries()) {
+  const processRecursive = async (
+    remaining: ReadonlyArray<VideoConfig>,
+    index: number,
+    acc: ProcessingAcc,
+  ): Promise<ProcessingAcc> => {
+    if (remaining.length === 0) return acc;
+
+    const [config, ...rest] = remaining;
+
     if (index > 0) {
       console.log(`  Waiting ${DELAY_BETWEEN_VIDEOS_MS / 1000}s before next video...`);
       await sleep(DELAY_BETWEEN_VIDEOS_MS);
     }
 
-    const result = await processVideo(config, outputDir, apiKey, schema, index, configs.length);
+    const result = await processVideo(config, outputDir, apiKey, schema, index, total);
 
-    if (result.error) {
-      errors.push(result.error);
-    } else {
-      successful++;
-      if (result.archivePath) {
-        archivePaths.push(result.archivePath);
-      }
-    }
-  }
+    const nextAcc = result.error
+      ? { ...acc, errors: [...acc.errors, result.error] }
+      : {
+          ...acc,
+          successful: acc.successful + 1,
+          archivePaths: result.archivePath
+            ? [...acc.archivePaths, result.archivePath]
+            : acc.archivePaths,
+        };
+
+    return processRecursive(rest, index + 1, nextAcc);
+  };
+
+  const acc = await processRecursive(configs, 0, { successful: 0, errors: [], archivePaths: [] });
 
   return {
-    successful,
-    failed: errors.length,
-    errors,
-    archivePaths,
+    successful: acc.successful,
+    failed: acc.errors.length,
+    errors: acc.errors,
+    archivePaths: acc.archivePaths,
   };
 };
 
+const printUsage = () => {
+  console.error("Usage: tsx bulk-recipe-processor.ts <input.txt> [options]");
+  console.error("");
+  console.error("Options:");
+  console.error("  -o, --output <dir>   Output directory (default: ./output)");
+  console.error("  -r, --range <range>  Process subset of recipes (1-indexed)");
+  console.error("                       Examples: 5-10, 5:, :10, 5");
+  console.error("");
+  console.error("Input file format (semicolon-separated):");
+  console.error("  video_url;filename;video_lang;output_lang;time_range");
+  console.error("");
+  console.error("Examples:");
+  console.error("  tsx bulk-recipe-processor.ts recipes.txt");
+  console.error("  tsx bulk-recipe-processor.ts recipes.txt -o ./my-output");
+  console.error("  tsx bulk-recipe-processor.ts recipes.txt --range 5-10");
+  console.error("  tsx bulk-recipe-processor.ts recipes.txt -r 5: -o ./output");
+};
+
 const main = async () => {
-  const inputFile = process.argv[2];
-  const outputDir = process.argv[3] || "./output";
+  const { inputFile, outputDir, rangeStr } = parseArgs(process.argv.slice(2));
 
   if (!inputFile) {
-    console.error("Usage: tsx bulk-recipe-processor.ts <input.txt> [output-dir]");
-    console.error("");
-    console.error("Input file format (semicolon-separated):");
-    console.error("  video_url;filename;video_lang;output_lang;range");
-    console.error("");
-    console.error("Examples:");
-    console.error("  https://youtube.com/watch?v=abc123");
-    console.error("  https://youtube.com/watch?v=def456;pasta-carbonara");
-    console.error("  https://youtube.com/watch?v=ghi789;ramen;ja;English;30:300");
+    printUsage();
     process.exit(1);
   }
 
@@ -206,7 +295,7 @@ const main = async () => {
 
   const parsed = parseInputFile(inputFile);
   const parseErrors = parsed.filter((item) => !isVideoConfig(item));
-  const configs = parsed.filter(isVideoConfig);
+  const allConfigs = parsed.filter(isVideoConfig);
 
   if (parseErrors.length > 0) {
     console.log("Parse errors in input file:");
@@ -218,12 +307,19 @@ const main = async () => {
     console.log("");
   }
 
-  if (configs.length === 0) {
+  if (allConfigs.length === 0) {
     console.error("No valid video configurations found in input file");
     process.exit(1);
   }
 
-  console.log(`Processing ${configs.length} video(s)...`);
+  const range = rangeStr ? parseRange(rangeStr, allConfigs.length) : null;
+  const configs = range ? allConfigs.slice(range.start, range.end) : allConfigs;
+
+  if (range) {
+    console.log(`Processing recipes ${range.start + 1}-${range.end} of ${allConfigs.length}...`);
+  } else {
+    console.log(`Processing ${configs.length} video(s)...`);
+  }
   console.log(`Output directory: ${outputDir}`);
   console.log("");
 
