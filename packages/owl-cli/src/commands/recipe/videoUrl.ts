@@ -1,5 +1,4 @@
 import { createCookieConfig, type OutputFormat, recipeFromVideo } from "core";
-import { parseTimeRange } from "../../lib/timeRange.js";
 import {
   getLanguageName,
   KEYRINGS,
@@ -11,6 +10,7 @@ import {
 } from "visual-insights";
 import type { CommandModule } from "yargs";
 import { getGeminiApiKey } from "../../lib/gemini/geminiKey.js";
+import { parseTimeRange } from "../../lib/timeRange.js";
 import { compose } from "../helpers/commandOptionsComposer.js";
 import {
   mapToApiModel,
