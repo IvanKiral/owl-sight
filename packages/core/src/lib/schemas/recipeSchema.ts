@@ -82,6 +82,7 @@ export const DEFAULT_RECIPE_SCHEMA = {
           "Eggs",
           "Air-fryer",
           "Slowcooker",
+          "Meal-prep",
         ],
       },
       uniqueItems: true,
