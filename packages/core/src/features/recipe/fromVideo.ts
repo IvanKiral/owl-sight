@@ -13,6 +13,7 @@ import {
 import { type ArchiveEntry, createArchive } from "../../lib/archive/createArchive.js";
 import { callGemini } from "../../lib/gemini/gemini.js";
 import {
+  addCreatedDateToResponse,
   addLanguageToResponse,
   addUrlToResponse,
   type DeserializedGeminiOutput,
@@ -104,11 +105,12 @@ export const recipeFromVideo = (
     const resultWithLanguage = options.videoLanguage
       ? addLanguageToResponse(resultWithUrl, getLanguageName(options.videoLanguage))
       : resultWithUrl;
+    const resultWithDate = addCreatedDateToResponse(resultWithLanguage);
     const recipeExtension = options.outputFormat === "json" ? "json" : "txt";
 
     if (!options.archive) {
       return success({
-        content: resultWithLanguage,
+        content: resultWithDate,
         sourceUrl: options.url,
       });
     }
@@ -125,7 +127,7 @@ export const recipeFromVideo = (
       include.includes("metadata") && { name: "metadata.json", filePath: metadataFilePath },
       include.includes("result") && {
         name: resultName,
-        content: serializeRecipeContent(resultWithLanguage),
+        content: serializeRecipeContent(resultWithDate),
       },
     ].filter((e): e is ArchiveEntry => Boolean(e));
 
@@ -139,7 +141,7 @@ export const recipeFromVideo = (
     }
 
     return success({
-      content: resultWithLanguage,
+      content: resultWithDate,
       sourceUrl: options.url,
       archivePath: options.archive.outputPath,
     });

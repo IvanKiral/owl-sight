@@ -44,3 +44,10 @@ export const addLanguageToResponse = (
   output.format === "json"
     ? { format: "json", parsed: { ...output.parsed, original_language: language } }
     : output;
+
+export const addCreatedDateToResponse = (
+  output: DeserializedGeminiOutput,
+): DeserializedGeminiOutput =>
+  output.format === "json"
+    ? { format: "json", parsed: { ...output.parsed, created_at: new Date().toISOString() } }
+    : output;
