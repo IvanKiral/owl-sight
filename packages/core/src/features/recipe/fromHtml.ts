@@ -7,6 +7,7 @@ import {
 } from "visual-insights";
 import { callGemini } from "../../lib/gemini/gemini.js";
 import {
+  addCreatedDateToResponse,
   addUrlToResponse,
   deserializeGeminiResponse,
   type OutputFormat,
@@ -61,9 +62,10 @@ export const recipeFromHtml = async (
   }
 
   const resultWithUrl = addUrlToResponse(deserializedResult.result, options.url);
+  const resultWithDate = addCreatedDateToResponse(resultWithUrl);
 
   return success({
-    content: resultWithUrl,
+    content: resultWithDate,
     sourceUrl: options.url,
   });
 };
