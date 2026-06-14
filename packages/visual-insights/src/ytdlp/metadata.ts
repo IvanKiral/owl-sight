@@ -32,11 +32,11 @@ const parseMetadata = <S extends z.ZodObject, K extends readonly (keyof z.infer<
   keys: K,
   data: unknown,
 ): WithError<Pick<Required<z.infer<S>>, K[number]>, string> => {
-  const pickObj = Object.fromEntries(keys.map((k) => [k, true])) as {
-    [P in K[number]]: true;
-  };
-
-  const result = schema.required().pick(pickObj).safeParse(data);
+  // zod's pick() mask type rejects masks built dynamically over a generic
+  // schema, so we widen to the base ZodObject (string keys) for the call.
+  const pickObj: Record<string, true> = Object.fromEntries(keys.map((k) => [k, true]));
+  const requiredSchema = schema.required() as z.ZodObject;
+  const result = requiredSchema.pick(pickObj).safeParse(data);
 
   if (!result.success) {
     return error(`Validation failed: ${result.error.issues.map((i) => i.message).join("; ")}`);

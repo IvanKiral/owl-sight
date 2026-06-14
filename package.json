@@ -1,7 +1,7 @@
 {
   "name": "owl-sight",
   "private": true,
-  "packageManager": "pnpm@10.13.1",
+  "packageManager": "pnpm@11.6.0",
   "scripts": {
     "build": "turbo run build --log-order=grouped",
     "biome:check": "biome check .",
@@ -16,7 +16,7 @@
     "@biomejs/biome": "^2.3.11",
     "@kontent-ai/biome-config": "^0.7.0",
     "@types/node": "^24.0.13",
-    "pnpm": "^10.13.1",
+    "pnpm": "^11.6.0",
     "tsx": "^4.0.0",
     "turbo": "^2.5.5",
     "typescript": "^5.8.3",
