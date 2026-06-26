@@ -13,8 +13,8 @@
     "unlink:cli": "cd packages/owl-cli && pnpm unlink --global"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.3.11",
-    "@kontent-ai/biome-config": "^0.7.0",
+    "@biomejs/biome": "^2.5.0",
+    "@kontent-ai/biome-config": "^0.7.3",
     "@types/node": "^24.0.13",
     "pnpm": "^11.6.0",
     "tsx": "^4.0.0",

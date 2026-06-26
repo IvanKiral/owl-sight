@@ -76,7 +76,12 @@ const main = async (): Promise<void> => {
       type: "string",
       default: "./output",
     })
-    .option("yes", { alias: "y", describe: "Skip the confirmation prompt", type: "boolean", default: false })
+    .option("yes", {
+      alias: "y",
+      describe: "Skip the confirmation prompt",
+      type: "boolean",
+      default: false,
+    })
     .help()
     .parse();
 
