@@ -23,9 +23,9 @@ import { countPending, getPending, type InboxItem, markStatus } from "./lib/d1In
 import {
   DEFAULT_MODEL_KEY,
   isModelKey,
-  mapToApiModel,
   MODEL_KEYS,
   type ModelKey,
+  mapToApiModel,
 } from "./lib/models.js";
 
 const MIN_DELAY_MS = 20_000;
@@ -47,7 +47,10 @@ const sanitizeSlug = (name: string): string =>
 
 const logError = (outputDir: string, url: string, message: string): void => {
   const timestamp = new Date().toISOString();
-  appendFileSync(join(outputDir, "recipes", "_errors.log"), `[${timestamp}] ${url}\n  ${message}\n\n`);
+  appendFileSync(
+    join(outputDir, "recipes", "_errors.log"),
+    `[${timestamp}] ${url}\n  ${message}\n\n`,
+  );
 };
 
 const extractAssets = async (zipPath: string, destDir: string, slug: string): Promise<void> => {
@@ -111,7 +114,7 @@ const processItem = async (
 
 type ProcessAcc = { successful: number; failed: number };
 
-const processQueue = async (
+const processQueue = (
   items: ReadonlyArray<InboxItem>,
   outputDir: string,
   apiKey: string,
@@ -235,14 +238,29 @@ const main = async (): Promise<void> => {
     .scriptName("queue-recipe")
     .usage("$0 [options]")
     .option("limit", { alias: "n", describe: "How many recipes to process", type: "number" })
-    .option("model", { alias: "m", describe: "Model key", type: "string", choices: [...MODEL_KEYS] })
+    .option("model", {
+      alias: "m",
+      describe: "Model key",
+      type: "string",
+      choices: [...MODEL_KEYS],
+    })
     .option("language", {
       alias: "l",
       describe: "Output language for the recipe (skips the language prompt)",
       type: "string",
     })
-    .option("output", { alias: "o", describe: "Output directory", type: "string", default: "./output" })
-    .option("yes", { alias: "y", describe: "Skip the confirmation prompt", type: "boolean", default: false })
+    .option("output", {
+      alias: "o",
+      describe: "Output directory",
+      type: "string",
+      default: "./output",
+    })
+    .option("yes", {
+      alias: "y",
+      describe: "Skip the confirmation prompt",
+      type: "boolean",
+      default: false,
+    })
     .help()
     .parse();
 
@@ -266,7 +284,8 @@ const main = async (): Promise<void> => {
     return;
   }
 
-  const modelKey: ModelKey = argv.model && isModelKey(argv.model) ? argv.model : await promptModel();
+  const modelKey: ModelKey =
+    argv.model && isModelKey(argv.model) ? argv.model : await promptModel();
 
   const language: RecipeLanguage = argv.language
     ? (argv.language as RecipeLanguage)
