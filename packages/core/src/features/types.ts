@@ -1,4 +1,4 @@
-export type ArchiveInclude = "video" | "transcription" | "metadata" | "result";
+export type ArchiveInclude = "video" | "transcription" | "metadata" | "result" | "thumbnail";
 
 export type ArchiveConfig = {
   readonly outputPath: string;

@@ -25,3 +25,4 @@ export {
   type TimeRange,
 } from "./ytdlp/cmdArgs.js";
 export { extractMetadata, type VideoMetadata } from "./ytdlp/metadata.js";
+export { extractSourceMeta, type RecipeSourceMeta } from "./ytdlp/sourceMeta.js";

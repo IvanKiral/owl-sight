@@ -56,6 +56,7 @@ export type VideoExtractionArgs = CommonExtractionArgs & {
   format?: string;
   mergeOutputFormat?: MergeOutputFormat;
   downloadSection?: TimeRange;
+  writeThumbnail?: boolean;
 };
 
 const createCookieArgs = (cookies?: CookieConfig): ReadonlyArray<string> => {
@@ -148,6 +149,7 @@ export const createYtDlpExtractVideoArgs = (
     ...(options.quiet ? ["--quiet"] : []),
 
     ...(options.writeInfoJson ? ["--write-info-json"] : []),
+    ...(options.writeThumbnail ? ["--write-thumbnail", "--convert-thumbnails", "jpg"] : []),
 
     ...createCookieArgs(options.cookies),
 

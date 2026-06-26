@@ -33,6 +33,7 @@ export {
 } from "./lib/config/cookieConfig.js";
 export { callGemini } from "./lib/gemini/gemini.js";
 export {
+  addAuthorToResponse,
   addUrlToResponse,
   type DeserializedGeminiOutput,
   deserializeGeminiResponse,
@@ -40,8 +41,10 @@ export {
   stripMarkdownCodeFences,
 } from "./lib/gemini/responseUtils.js";
 export {
+  AUTO_RECIPE_LANGUAGE,
   createRecipePrompt,
   markdownDescriptionInstruction,
+  type RecipeLanguage,
   type RecipePromptData,
 } from "./lib/prompts/recipePrompt.js";
 export {

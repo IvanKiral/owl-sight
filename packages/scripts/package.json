@@ -5,11 +5,15 @@
   "type": "module",
   "scripts": {
     "parse:instagram": "tsx src/instagram-saved-parser.ts",
-    "bulk-recipe": "tsx src/bulk-recipe-processor.ts"
+    "bulk-recipe": "tsx src/bulk-recipe-processor.ts",
+    "queue-recipe": "tsx src/queue-recipe-processor.ts",
+    "publish-recipes": "tsx src/publish-recipes.ts"
   },
   "dependencies": {
+    "@clack/prompts": "^1.6.0",
     "@types/yargs": "^17.0.33",
     "core": "workspace:*",
+    "execa": "^9.6.0",
     "unzipper": "^0.12.3",
     "visual-insights": "workspace:*",
     "yargs": "^18.0.0",
