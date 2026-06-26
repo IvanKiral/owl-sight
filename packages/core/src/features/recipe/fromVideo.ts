@@ -3,16 +3,17 @@ import { error, success, type WithError } from "shared";
 import {
   type CookieConfig,
   downloadDataFromVideo,
+  extractSourceMeta,
   getLanguageName,
   getVideoData,
   type TimeRange,
   type WhisperLanguage,
-  type WhisperLanguageName,
   withTempDir,
 } from "visual-insights";
 import { type ArchiveEntry, createArchive } from "../../lib/archive/createArchive.js";
 import { callGemini } from "../../lib/gemini/gemini.js";
 import {
+  addAuthorToResponse,
   addCreatedDateToResponse,
   addLanguageToResponse,
   addUrlToResponse,
@@ -20,7 +21,7 @@ import {
   deserializeGeminiResponse,
   type OutputFormat,
 } from "../../lib/gemini/responseUtils.js";
-import { createRecipePrompt } from "../../lib/prompts/recipePrompt.js";
+import { createRecipePrompt, type RecipeLanguage } from "../../lib/prompts/recipePrompt.js";
 import type { ArchiveConfig } from "../types.js";
 
 export type RecipeFromVideoOptions = {
@@ -29,7 +30,7 @@ export type RecipeFromVideoOptions = {
   readonly schema: string;
   readonly model: string;
   readonly outputFormat: OutputFormat;
-  readonly outputLanguage: WhisperLanguageName;
+  readonly outputLanguage: RecipeLanguage;
   readonly videoLanguage?: WhisperLanguage;
   readonly cookies?: CookieConfig;
   readonly archive?: ArchiveConfig;
@@ -54,14 +55,18 @@ export const recipeFromVideo = (
       cookies: options.cookies,
       metadata: true,
       downloadSection: options.timeRange,
+      writeThumbnail: true,
     });
 
     if (!downloadResult.success) {
       return error(`Failed to download video: ${downloadResult.error}`);
     }
 
-    const { videoFilePath, metadataFilePath } = downloadResult.result;
+    const { videoFilePath, metadataFilePath, thumbnailFilePath } = downloadResult.result;
     console.log("Files in tmp folder:", fs.readdirSync(tmpDir));
+
+    const sourceMetaResult = await extractSourceMeta(metadataFilePath);
+    const sourceMeta = sourceMetaResult.success ? sourceMetaResult.result : {};
 
     const videoResult = await getVideoData(videoFilePath, metadataFilePath, tmpDir, {
       whisperOptions: {
@@ -102,9 +107,12 @@ export const recipeFromVideo = (
     }
 
     const resultWithUrl = addUrlToResponse(deserializedResult.result, options.url);
-    const resultWithLanguage = options.videoLanguage
-      ? addLanguageToResponse(resultWithUrl, getLanguageName(options.videoLanguage))
+    const resultWithAuthor = sourceMeta.author
+      ? addAuthorToResponse(resultWithUrl, sourceMeta.author)
       : resultWithUrl;
+    const resultWithLanguage = options.videoLanguage
+      ? addLanguageToResponse(resultWithAuthor, getLanguageName(options.videoLanguage))
+      : resultWithAuthor;
     const resultWithDate = addCreatedDateToResponse(resultWithLanguage);
     const recipeExtension = options.outputFormat === "json" ? "json" : "txt";
 
@@ -120,6 +128,8 @@ export const recipeFromVideo = (
     const resultName = filename ? `${filename}.${recipeExtension}` : `recipe.${recipeExtension}`;
     const entries: ReadonlyArray<ArchiveEntry> = [
       include.includes("video") && { name: videoName, filePath: videoFilePath },
+      include.includes("thumbnail") &&
+        fs.existsSync(thumbnailFilePath) && { name: "thumbnail.jpg", filePath: thumbnailFilePath },
       include.includes("transcription") && {
         name: "transcription.txt",
         content: videoResult.result.transcription,

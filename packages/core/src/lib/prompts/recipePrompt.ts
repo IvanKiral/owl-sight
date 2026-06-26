@@ -12,9 +12,18 @@ export type RecipePromptData =
       articleTitle: string | null;
     };
 
+export const AUTO_RECIPE_LANGUAGE = "auto";
+
+export type RecipeLanguage = WhisperLanguageName | typeof AUTO_RECIPE_LANGUAGE;
+
+const buildLanguageInstruction = (language: RecipeLanguage): string =>
+  language === AUTO_RECIPE_LANGUAGE
+    ? "Detect the language of the source recipe. If it is Czech, write the entire recipe in Czech; otherwise write the entire recipe in Slovak. Use natural phrasing in the chosen language; preserve meaning, tone, and intent, not literal wording."
+    : `Translate it to ${language} language. Translate with natural phrasing in the target language. Preserve meaning, tone, and intent, not literal wording`;
+
 export const createRecipePrompt = (options: {
   data: RecipePromptData;
-  language: WhisperLanguageName;
+  language: RecipeLanguage;
   schema: string;
   format: OutputFormat;
 }): string =>
@@ -26,7 +35,7 @@ ${JSON.stringify(options.data, null, 2)}
 If any information is not available, use null for that field.
 Focus on extracting clear, actionable recipe information.
 Return only valid ${options.format}, no additional text or formatting.
-Translate it to ${options.language} language. Translate with natural phrasing in the target language. Preserve meaning, tone, and intent, not literal wording
+${buildLanguageInstruction(options.language)}
 ${"filename" in options.data && options.data.filename ? `The source filename is "${options.data.filename}" - if it makes sense, use this as a hint for the recipe title and component names.` : ""}
 Extract and structure this information into ${options.format} with the strictly following format. Add only values specified in the schema:
 ${options.schema}

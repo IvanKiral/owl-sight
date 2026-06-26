@@ -6,7 +6,13 @@ import { runYtDlp } from "./ytdlp/runYtdlp.js";
 export type YtDlpVideoOptions = Partial<
   Pick<
     VideoExtractionArgs,
-    "quality" | "format" | "mergeOutputFormat" | "quiet" | "cookies" | "downloadSection"
+    | "quality"
+    | "format"
+    | "mergeOutputFormat"
+    | "quiet"
+    | "cookies"
+    | "downloadSection"
+    | "writeThumbnail"
   >
 >;
 
@@ -14,7 +20,9 @@ export const downloadDataFromVideo = async (
   url: string,
   dirPath: string,
   options?: YtDlpVideoOptions & { metadata?: boolean },
-): Promise<WithError<{ videoFilePath: string; metadataFilePath: string }, string>> => {
+): Promise<
+  WithError<{ videoFilePath: string; metadataFilePath: string; thumbnailFilePath: string }, string>
+> => {
   const outTemplate = path.join(dirPath, `video.%(ext)s`);
 
   const ytdlArgs = createYtDlpExtractVideoArgs({
@@ -26,6 +34,7 @@ export const downloadDataFromVideo = async (
     quiet: options?.quiet ?? false,
     cookies: options?.cookies,
     downloadSection: options?.downloadSection,
+    writeThumbnail: options?.writeThumbnail,
   });
 
   try {
@@ -33,6 +42,7 @@ export const downloadDataFromVideo = async (
     return success({
       videoFilePath: path.join(dirPath, `video.mp4`),
       metadataFilePath: path.join(dirPath, `video.info.json`),
+      thumbnailFilePath: path.join(dirPath, `video.jpg`),
     });
   } catch (e) {
     return error(`Failed to download video: ${e instanceof Error ? e.message : String(e)}`);

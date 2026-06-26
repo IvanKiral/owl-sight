@@ -37,6 +37,14 @@ export const addUrlToResponse = (
     ? { format: "json", parsed: { ...output.parsed, source_url: url } }
     : { format: "markdown", parsed: `${output.parsed}\n\nSource Url: ${url}` };
 
+export const addAuthorToResponse = (
+  output: DeserializedGeminiOutput,
+  author: string,
+): DeserializedGeminiOutput =>
+  output.format === "json"
+    ? { format: "json", parsed: { ...output.parsed, author } }
+    : { format: "markdown", parsed: `${output.parsed}\n\nAuthor: ${author}` };
+
 export const addLanguageToResponse = (
   output: DeserializedGeminiOutput,
   language: string,
