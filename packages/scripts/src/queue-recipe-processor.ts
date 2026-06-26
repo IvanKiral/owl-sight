@@ -145,9 +145,8 @@ const processQueue = (
     const outcome = await processItem(item, outputDir, apiKey, schema, model, language);
 
     if (!outcome.success) {
-      console.log(`  Failed: ${outcome.error}`);
+      console.log(`  Failed (left in queue for retry): ${outcome.error}`);
       logError(outputDir, item.url, outcome.error);
-      await markStatus(item.id, "failed");
       return processRecursive(rest, index + 1, { ...acc, failed: acc.failed + 1 });
     }
 
